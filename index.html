@@ -1,1892 +1,2470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For You</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=DM+Sans:wght@400;500;700&family=Dela+Gothic+One&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="preload" href="assets/67-audio.mp3" as="audio">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            /* Backgrounds */
-            --bg-cream: #FFF8F0;
-            --bg-blush: #FFF0F3;
-            --bg-white: #FFFFFF;
-            --bg-black: #000000;
-
-            /* Text */
-            --text-primary: #3D2C2C;
-            --text-muted: #7A6565;
-
-            /* Accents */
-            --rose: #E8657A;
-            --rose-hover: #D4506A;
-            --rose-light: #FADADD;
-            --rose-glow: rgba(232, 101, 122, 0.2);
-            --gold: #E8B86D;
-            --success: #6DBF7B;
-            --error: #E74C3C;
-
-            /* Buttons */
-            --btn-no-bg: #F5E6E8;
-            --btn-no-hover: #EDD5D8;
-
-            /* Shadows */
-            --shadow-soft: 0 2px 12px rgba(61, 44, 44, 0.08);
-            --shadow-btn: 0 2px 8px rgba(232, 101, 122, 0.25);
-            --shadow-btn-hover: 0 4px 16px rgba(232, 101, 122, 0.35);
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, var(--bg-cream), var(--bg-blush), #FFF5EE, var(--bg-cream));
-            background-size: 400% 400%;
-            animation: gradientBG 20s ease infinite;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        /* Custom cursor for desktop */
-        @media (hover: hover) {
-            body {
-                cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath d='M9 2c-3 0-5.5 2.5-5.5 5.5S9 16 9 16s5.5-5.5 5.5-8.5S12 2 9 2z' fill='%23E8657A'/%3E%3C/svg%3E") 9 9, auto;
-            }
-        }
-
-        @keyframes gradientBG {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* Sparkle cursor trail */
-        .sparkle {
-            position: fixed;
-            pointer-events: none;
-            width: 3px;
-            height: 3px;
-            border-radius: 50%;
-            z-index: 9999;
-            animation: sparkle-fade 0.3s ease-out forwards;
-        }
-
-        @keyframes sparkle-fade {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.3); }
-        }
-
-        /* Sound Toggle */
-        .sound-toggle {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 1001;
-            background: rgba(61, 44, 44, 0.06);
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease-out;
-        }
-
-        .sound-toggle:hover {
-            background: rgba(61, 44, 44, 0.1);
-        }
-
-        /* Page Containers */
-        .page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease-out, visibility 0.4s ease-out, transform 0.4s ease-out;
-            padding: 20px;
-            z-index: 1;
-        }
-
-        .page.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        /* Floating Particles */
-        .particles-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .particle {
-            position: absolute;
-            animation: floatUp var(--duration, 10s) ease-in-out infinite;
-            animation-delay: var(--delay, 0s);
-        }
-
-        .particle.heart {
-            color: var(--rose);
-            font-size: var(--size, 12px);
-            opacity: var(--opacity, 0.4);
-        }
-
-        .particle.sparkle {
-            width: var(--size, 4px);
-            height: var(--size, 4px);
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: var(--opacity, 0.3);
-        }
-
-        @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) translateX(0);
-                opacity: 0;
-            }
-            10% { opacity: var(--opacity, 0.4); }
-            90% { opacity: var(--opacity, 0.4); }
-            100% {
-                transform: translateY(-50px) translateX(var(--drift, 20px));
-                opacity: 0;
-            }
-        }
-
-        /* ============================================
-           PIXEL ART TAMAGOTCHI
-           ============================================ */
-        .tamagotchi-wrapper {
-            position: relative;
-        }
-
-        .tamagotchi-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 180px;
-            height: 180px;
-            background: radial-gradient(circle, rgba(232, 101, 122, 0.12) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        .tamagotchi {
-            width: 120px;
-            height: 120px;
-            position: relative;
-            transition: transform 0.3s ease-out;
-        }
-
-        .pixel-grid {
-            display: grid;
-            grid-template-columns: repeat(16, 1fr);
-            grid-template-rows: repeat(16, 1fr);
-            width: 100%;
-            height: 100%;
-            image-rendering: pixelated;
-        }
-
-        .pixel { aspect-ratio: 1; }
-
-        /* Tamagotchi Colors */
-        .p-body { background: #FFF176; }
-        .p-ear { background: #1A237E; }
-        .p-eye { background: #1A237E; }
-        .p-eye-highlight { background: #FFFFFF; }
-        .p-cheek { background: #F48FB1; }
-        .p-mouth { background: #D32F2F; }
-        .p-outline { background: #333333; }
-        .p-clear { background: transparent; }
-
-        .tamagotchi.idle { animation: idleFloat 2s ease-in-out infinite; }
-        .tamagotchi.excited { animation: excitedBounce 0.3s ease-in-out; }
-        .tamagotchi.wave { animation: wave 0.5s ease-in-out; }
-        .tamagotchi.celebrating { animation: celebrate 1s ease-in-out infinite; }
-
-        @keyframes idleFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes excitedBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.12); }
-        }
-
-        @keyframes wave {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-8deg); }
-            75% { transform: rotate(8deg); }
-        }
-
-        @keyframes celebrate {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-10px) scale(1.05); }
-        }
-
-        /* Popup Tamagotchi */
-        .popup-tamagotchi {
-            position: fixed;
-            top: -120px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-120px);
-            width: 100px;
-            height: 100px;
-            z-index: 100;
-            transition: transform 0.3s ease-out;
-        }
-
-        .popup-tamagotchi.show { transform: translateX(-50%) translateY(60px); }
-        .popup-tamagotchi.peek { transform: translateX(-50%) translateY(-30px) !important; }
-        .popup-tamagotchi.wiggle { animation: wiggle 0.4s ease-in-out; }
-        .popup-tamagotchi.droopy { animation: droopy 0.6s ease-in-out; }
-
-        @keyframes wiggle {
-            0%, 100% { transform: translateX(-50%) translateY(60px) rotate(0deg); }
-            25% { transform: translateX(-50%) translateY(60px) rotate(-8deg); }
-            75% { transform: translateX(-50%) translateY(60px) rotate(8deg); }
-        }
-
-        @keyframes droopy {
-            0%, 100% { transform: translateX(-50%) translateY(60px); }
-            50% { transform: translateX(-50%) translateY(70px); }
-        }
-
-        /* Pixel elements for reactions */
-        .pixel-exclaim {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 16px;
-            background: var(--error);
-            display: none;
-        }
-
-        .pixel-exclaim::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: var(--error);
-        }
-
-        .popup-tamagotchi.show-exclaim .pixel-exclaim { display: block; }
-
-        .pixel-tear {
-            position: absolute;
-            top: 40px;
-            right: 20px;
-            width: 4px;
-            height: 6px;
-            background: #64B5F6;
-            border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
-            display: none;
-            animation: tearFall 0.8s ease-in forwards;
-        }
-
-        .popup-tamagotchi.show-tear .pixel-tear { display: block; }
-
-        @keyframes tearFall {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(15px); }
-        }
-
-        /* ============================================
-           PIXEL ART CANNON
-           ============================================ */
-        .cannon-container {
-            position: fixed;
-            bottom: 15%;
-            left: -200px;
-            width: 180px;
-            height: 120px;
-            transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 10;
-        }
-
-        .cannon-container.roll-in { left: 20%; }
-
-        .cannon-pixel-grid {
-            display: grid;
-            grid-template-columns: repeat(24, 1fr);
-            grid-template-rows: repeat(16, 1fr);
-            width: 100%;
-            height: 100%;
-            image-rendering: pixelated;
-        }
-
-        .c-barrel { background: #37474F; }
-        .c-barrel-dark { background: #263238; }
-        .c-barrel-light { background: #546E7A; }
-        .c-base { background: #455A64; }
-        .c-wheel { background: #263238; }
-        .c-wheel-hub { background: #546E7A; }
-        .c-clear { background: transparent; }
-
-        /* ============================================
-           BUTTONS
-           ============================================ */
-        .btn {
-            padding: 12px 36px;
-            font-size: 16px;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease-out;
-            min-width: 120px;
-            min-height: 48px;
-        }
-
-        .btn-primary {
-            background: var(--rose);
-            color: white;
-            box-shadow: var(--shadow-btn);
-        }
-
-        .btn-primary:hover {
-            background: var(--rose-hover);
-            box-shadow: var(--shadow-btn-hover);
-            transform: scale(1.03);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.97);
-        }
-
-        .btn-primary.pulse {
-            animation: pulse 2.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        .btn-secondary {
-            background: var(--btn-no-bg);
-            color: var(--text-primary);
-            box-shadow: 0 1px 4px rgba(61, 44, 44, 0.06);
-        }
-
-        .btn-secondary:hover {
-            background: var(--btn-no-hover);
-            box-shadow: 0 2px 8px rgba(61, 44, 44, 0.1);
-        }
-
-        .btn-broken {
-            background: var(--btn-no-bg);
-            color: var(--text-primary);
-            transform: rotate(3deg);
-            opacity: 0.45;
-            cursor: not-allowed;
-            filter: grayscale(0.5);
-            position: relative;
-        }
-
-        .btn-broken::after {
-            content: '';
-            position: absolute;
-            top: 30%;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background: rgba(0, 0, 0, 0.3);
-            transform: rotate(-15deg);
-        }
-
-        /* ============================================
-           TYPEWRITER
-           ============================================ */
-        .typewriter {
-            font-family: 'Caveat', cursive;
-            font-weight: 700;
-            font-size: clamp(24px, 5vw, 32px);
-            color: var(--text-primary);
-            text-align: center;
-            margin: 30px 0;
-            min-height: 40px;
-        }
-
-        .typewriter .cursor {
-            display: inline-block;
-            width: 2px;
-            height: 0.9em;
-            background: var(--rose);
-            margin-left: 2px;
-            animation: blink 0.8s step-end infinite;
-            vertical-align: text-bottom;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        /* ============================================
-           LANDING PAGE
-           ============================================ */
-        #landing .tamagotchi-wrapper {
-            margin-top: -10vh;
-        }
-
-        /* ============================================
-           QUESTION PAGE
-           ============================================ */
-        #question { gap: 20px; }
-
-        .question-text {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: clamp(28px, 6vw, 48px);
-            color: var(--text-primary);
-            text-align: center;
-        }
-
-        .question-text .word {
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: all 0.15s ease-out;
-        }
-
-        .question-text .word.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .buttons-container {
-            display: flex;
-            gap: 16px;
-            margin-top: 30px;
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-        }
-
-        .buttons-container.show { opacity: 1; }
-
-        .no-btn {
-            position: absolute;
-            transition: all 180ms cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        .question-change-text {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            font-size: clamp(18px, 4vw, 24px);
-            color: var(--text-muted);
-        }
-
-        /* ============================================
-           CAPTCHA PAGE
-           ============================================ */
-        #captcha {
-            background: var(--bg-blush);
-        }
-
-        .captcha-header {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 700;
-            font-size: clamp(20px, 4vw, 28px);
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .captcha-subheader {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 400;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        .captcha-box {
-            background: var(--bg-white);
-            border: 1px solid rgba(61, 44, 44, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 4px 20px rgba(61, 44, 44, 0.08);
-        }
-
-        .captcha-prompt {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            font-size: 15px;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-        }
-
-        .captcha-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        /* Polaroid Style */
-        .polaroid {
-            background: white;
-            padding: 6px 6px 24px 6px;
-            border: 1px solid rgba(61, 44, 44, 0.06);
-            border-radius: 3px;
-            box-shadow: 0 2px 6px rgba(61, 44, 44, 0.1);
-            cursor: pointer;
-            transition: all 0.2s ease-out;
-            position: relative;
-        }
-
-        .polaroid-inner {
-            aspect-ratio: 1;
-            background: #e8e8e8;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .polaroid-inner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .polaroid-inner.stock img {
-            filter: saturate(0.8) brightness(0.97);
-        }
-
-        .polaroid:hover {
-            transform: rotate(0deg) translateY(-3px) scale(1.03);
-            box-shadow: 0 4px 12px rgba(61, 44, 44, 0.15);
-        }
-
-        .polaroid.selected {
-            border: 2px solid var(--rose);
-        }
-
-        .polaroid.selected .checkmark { display: flex; }
-
-        .polaroid.error {
-            border-color: var(--error);
-            animation: shake 0.3s ease-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-
-        .checkmark {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 22px;
-            height: 22px;
-            background: var(--rose);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-        }
-
-        .captcha-verify-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--rose);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease-out;
-            box-shadow: var(--shadow-btn);
-        }
-
-        .captcha-verify-btn:hover:not(:disabled) {
-            background: var(--rose-hover);
-            box-shadow: var(--shadow-btn-hover);
-        }
-
-        .captcha-verify-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .captcha-status {
-            text-align: center;
-            padding: 40px 20px;
-            display: none;
-        }
-
-        .captcha-spinner {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .captcha-spinner .dot {
-            width: 10px;
-            height: 10px;
-            background: var(--rose);
-            border-radius: 50%;
-            animation: bounce 0.6s ease-in-out infinite;
-        }
-
-        .captcha-spinner .dot:nth-child(2) { animation-delay: 0.1s; }
-        .captcha-spinner .dot:nth-child(3) { animation-delay: 0.2s; }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .captcha-checkmark {
-            color: var(--success);
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .captcha-message {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            color: var(--text-primary);
-        }
-
-        .captcha-message.error {
-            color: var(--error);
-        }
-
-        .captcha-result-area {
-            margin-top: 24px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
-        }
-
-        .captcha-result-area.show { opacity: 1; }
-
-        .captcha-result-buttons {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-top: 16px;
-        }
-
-        .captcha-hint {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 400;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 20px;
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
-        }
-
-        .captcha-hint.show { opacity: 1; }
-
-        /* Toast for stock rejection */
-        .rejection-toast {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            color: var(--error);
-            white-space: nowrap;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            animation: toastFloat 1s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes toastFloat {
-            0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-        }
-
-        /* ============================================
-           CANNON TRANSITION PAGE
-           ============================================ */
-        #cannon-transition {
-            background: var(--bg-white);
-        }
-
-        .screen-shake { animation: screenShake 0.2s ease-out; }
-
-        @keyframes screenShake {
-            0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(-3px, 2px); }
-            40% { transform: translate(3px, -2px); }
-            60% { transform: translate(-2px, 3px); }
-            80% { transform: translate(2px, -2px); }
-        }
-
-        /* ============================================
-           I LOVE YOU PAGE
-           ============================================ */
-        #iloveyou {
-            background: var(--bg-cream);
-        }
-
-        .love-text {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: clamp(36px, 8vw, 64px);
-            color: var(--text-primary);
-            text-align: center;
-            text-shadow: 0 1px 2px rgba(232, 101, 122, 0.15);
-            opacity: 0;
-            transform: scale(0.96);
-            transition: all 1s ease-out;
-        }
-
-        .love-text.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .love-btn {
-            margin-top: 40px;
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
-        }
-
-        .love-btn.show {
-            opacity: 1;
-            animation: heartbeat 0.9s ease-in-out infinite;
-        }
-
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            14% { transform: scale(1.04); }
-            28% { transform: scale(1); }
-            42% { transform: scale(1.07); }
-            56% { transform: scale(1); }
-        }
-
-        .ellipsis-dot {
-            opacity: 0;
-            transition: opacity 0.3s ease-out;
-        }
-
-        .ellipsis-dot.show { opacity: 1; }
-
-        /* ============================================
-           BLACKOUT PAGE
-           ============================================ */
-        #blackout {
-            background: var(--bg-black);
-            overflow: hidden;
-        }
-
-        .flicker { animation: flicker 0.15s steps(3); }
-
-        @keyframes flicker {
-            0% { opacity: 0; }
-            33% { opacity: 1; }
-            66% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
-        .sixtyseven-text {
-            font-family: 'Dela Gothic One', cursive;
-            font-size: clamp(40px, 15vw, 130px);
-            color: white;
-            white-space: nowrap;
-            position: absolute;
-            transform: translateX(100vw);
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.4), 0 0 60px rgba(232, 101, 122, 0.25);
-        }
-
-        .sixtyseven-text.slide {
-            animation: slideAcross 2s linear forwards;
-        }
-
-        @keyframes slideAcross {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100vw); }
-        }
-
-        .screen-rumble { animation: screenRumble 2s linear; }
-
-        @keyframes screenRumble {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-2px, 1px); }
-            20% { transform: translate(2px, -1px); }
-            30% { transform: translate(-1px, 2px); }
-            40% { transform: translate(1px, -1px); }
-            50% { transform: translate(-2px, 1px); }
-            60% { transform: translate(1px, -2px); }
-            70% { transform: translate(-1px, 1px); }
-            80% { transform: translate(2px, -1px); }
-            90% { transform: translate(-1px, 2px); }
-        }
-
-        /* ============================================
-           VICTORY PAGE
-           ============================================ */
-        #victory {
-            background: var(--bg-blush);
-        }
-
-        .victory-tamagotchi {
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .victory-tamagotchi .tamagotchi-glow {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(232, 101, 122, 0.15) 0%, transparent 70%);
-        }
-
-        .victory-hearts {
-            position: absolute;
-            width: 140px;
-            height: 80px;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
-
-        .victory-heart {
-            position: absolute;
-            font-size: 10px;
-            color: var(--rose);
-            animation: victoryHeartFloat 2s ease-in-out infinite;
-        }
-
-        @keyframes victoryHeartFloat {
-            0%, 100% { transform: translateY(0); opacity: 0.8; }
-            50% { transform: translateY(-20px); opacity: 0.4; }
-        }
-
-        .victory-content { text-align: center; }
-
-        .victory-line {
-            opacity: 0;
-            transform: translateY(15px);
-            transition: all 0.4s ease-out;
-        }
-
-        .victory-line.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .victory-title {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: clamp(28px, 5vw, 42px);
-            color: var(--rose);
-            margin-bottom: 24px;
-        }
-
-        .victory-date {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            font-size: clamp(16px, 3vw, 20px);
-            color: var(--text-primary);
-            margin: 4px 0;
-        }
-
-        .victory-time {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 400;
-            font-size: clamp(14px, 2.5vw, 18px);
-            color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .victory-personal {
-            font-family: 'Caveat', cursive;
-            font-weight: 700;
-            font-size: clamp(18px, 3.5vw, 24px);
-            color: var(--text-primary);
-            margin: 4px 0;
-        }
-
-        .victory-hint {
-            font-family: 'Caveat', cursive;
-            font-weight: 700;
-            font-size: clamp(15px, 3vw, 20px);
-            color: var(--rose);
-            opacity: 0.7;
-        }
-
-        .calendar-link {
-            display: inline-block;
-            margin-top: 24px;
-            background: var(--btn-no-bg);
-            color: var(--rose);
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 400;
-            font-size: 14px;
-            text-decoration: none;
-            padding: 10px 24px;
-            border: 1px solid rgba(232, 101, 122, 0.2);
-            border-radius: 50px;
-            transition: all 0.2s ease-out;
-        }
-
-        .calendar-link:hover {
-            background: var(--btn-no-hover);
-        }
-
-        /* ============================================
-           MOBILE ADJUSTMENTS
-           ============================================ */
-        @media (max-width: 480px) {
-            .captcha-box {
-                padding: 16px;
-            }
-
-            .polaroid {
-                padding: 4px 4px 16px 4px;
-            }
-
-            .buttons-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cannon-container {
-                width: 140px;
-                height: 90px;
-            }
-
-            .cannon-container.roll-in { left: 10%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For You</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=DM+Sans:wght@400;500;700&family=Dela+Gothic+One&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+
+  <!-- Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* ========================================
+       CSS RESET & BASE
+    ======================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #FFF8F0;
+      color: #3D2C2C;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ========================================
+       CSS VARIABLES
+    ======================================== */
+    :root {
+      /* Backgrounds */
+      --bg-cream: #FFF8F0;
+      --bg-blush: #FFF0F3;
+      --bg-white: #FFFFFF;
+      --bg-black: #000000;
+
+      /* Text */
+      --text-primary: #3D2C2C;
+      --text-secondary: #7A6565;
+      --text-muted: #9B8A8A;
+
+      /* Accents */
+      --rose: #E8657A;
+      --rose-hover: #D4506A;
+      --rose-light: #FADADD;
+      --rose-glow: rgba(232, 101, 122, 0.15);
+      --gold: #E8B86D;
+      --red-error: #E74C3C;
+      --green-success: #6DBF7B;
+
+      /* Button */
+      --btn-secondary-bg: #F5E6E8;
+      --btn-secondary-hover: #EDD5D8;
+    }
+
+    /* ========================================
+       CUSTOM CURSOR (Desktop Only)
+    ======================================== */
+    @media (hover: hover) and (pointer: fine) {
+      body:not(.blackout) {
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath d='M9 3 C6 0, 0 2, 0 7 C0 12, 9 17, 9 17 C9 17, 18 12, 18 7 C18 2, 12 0, 9 3Z' fill='%23E8657A'/%3E%3C/svg%3E") 9 9, auto;
+      }
+
+      body:not(.blackout) * {
+        cursor: inherit;
+      }
+
+      button, .btn, [role="button"] {
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cpath d='M9 3 C6 0, 0 2, 0 7 C0 12, 9 17, 9 17 C9 17, 18 12, 18 7 C18 2, 12 0, 9 3Z' fill='%23E8657A'/%3E%3C/svg%3E") 9 9, pointer;
+      }
+    }
+
+    /* ========================================
+       BACKGROUND GRADIENT ANIMATION
+    ======================================== */
+    @keyframes bgShift {
+      0%, 100% { background-color: #FFF8F0; }
+      50% { background-color: #FFF2F0; }
+    }
+
+    body {
+      animation: bgShift 20s ease-in-out infinite;
+    }
+
+    body.blackout {
+      animation: none !important;
+      background-color: #000000 !important;
+    }
+
+    /* ========================================
+       PARTICLE LAYER
+    ======================================== */
+    #particle-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      transition: opacity 0.3s;
+    }
+
+    .particle {
+      position: absolute;
+      bottom: -30px;
+      will-change: transform, opacity;
+    }
+
+    .particle-heart {
+      width: 12px;
+      height: 12px;
+      opacity: 0.25;
+    }
+
+    .particle-heart::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--rose);
+      clip-path: path('M6 2 C4 0, 0 1, 0 4 C0 7, 6 10, 6 10 C6 10, 12 7, 12 4 C12 1, 8 0, 6 2Z');
+    }
+
+    .particle-sparkle {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0.25;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: var(--particle-opacity, 0.25);
+      }
+      90% {
+        opacity: var(--particle-opacity, 0.25);
+      }
+      100% {
+        transform: translateY(calc(-100vh - 50px)) translateX(var(--drift, 0px)) rotate(var(--rotation, 0deg));
+        opacity: 0;
+      }
+    }
+
+    /* ========================================
+       SPARKLE TRAIL (Desktop Only)
+    ======================================== */
+    .sparkle-trail {
+      position: fixed;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      animation: sparkleOut 0.3s ease-out forwards;
+    }
+
+    @keyframes sparkleOut {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* ========================================
+       SOUND TOGGLE
+    ======================================== */
+    #sound-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(61, 44, 44, 0.05);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      z-index: 10000;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    #sound-toggle:hover {
+      background: rgba(61, 44, 44, 0.1);
+    }
+
+    body.blackout #sound-toggle {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    body.blackout #sound-toggle:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ========================================
+       PAGE CONTAINERS
+    ======================================== */
+    .page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding: 20px;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    .page-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 100%;
+    }
+
+    /* Page transition animations */
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pageOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+
+    .page.entering {
+      animation: pageIn 0.4s ease-out forwards;
+    }
+
+    .page.exiting {
+      animation: pageOut 0.4s ease-out forwards;
+    }
+
+    /* ========================================
+       BUTTONS
+    ======================================== */
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 40px;
+      min-width: 130px;
+      min-height: 48px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--rose);
+      color: #FFFFFF;
+      box-shadow: 0 3px 10px rgba(232, 101, 122, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--rose-hover);
+      box-shadow: 0 6px 20px rgba(232, 101, 122, 0.4);
+      transform: scale(1.03);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary:disabled:hover {
+      background: var(--rose);
+      box-shadow: 0 3px 10px rgba(232, 101, 122, 0.3);
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--btn-secondary-bg);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(61, 44, 44, 0.06);
+    }
+
+    .btn-secondary:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    @keyframes btnPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.015); }
+    }
+
+    .btn-pulse {
+      animation: btnPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.04); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.07); }
+      56% { transform: scale(1); }
+    }
+
+    .btn-heartbeat {
+      animation: heartbeat 0.9s ease-in-out infinite;
+    }
+
+    /* ========================================
+       TAMAGOTCHI PIXEL ART
+    ======================================== */
+    .tamagotchi-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px 20px var(--rose-glow);
+      border-radius: 50%;
+    }
+
+    .tamagotchi {
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      grid-template-rows: repeat(16, 1fr);
+      width: 96px;
+      height: 96px;
+      image-rendering: pixelated;
+    }
+
+    .tamagotchi .pixel {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Tamagotchi colors */
+    .px-body { background: #FFF176; }
+    .px-ear { background: #1A237E; }
+    .px-eye { background: #1A237E; }
+    .px-eye-highlight { background: #FFFFFF; }
+    .px-cheek { background: #F48FB1; }
+    .px-mouth { background: #D32F2F; }
+    .px-outline { background: #333333; }
+    .px-tear { background: #64B5F6; }
+    .px-heart { background: #E8657A; }
+
+    @keyframes tamaFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .tamagotchi-wrapper.floating {
+      animation: tamaFloat 2.5s ease-in-out infinite;
+    }
+
+    @keyframes tamaWave {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      50% { transform: rotate(8deg); }
+      75% { transform: rotate(-8deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .tamagotchi-wrapper.waving {
+      animation: tamaWave 0.5s ease-in-out;
+    }
+
+    @keyframes tamaBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    .tamagotchi-wrapper.bouncing {
+      animation: tamaBounce 0.3s ease-out;
+    }
+
+    @keyframes tamaEnergeticBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .tamagotchi-wrapper.energetic {
+      animation: tamaEnergeticBounce 1s ease-in-out infinite;
+    }
+
+    /* ========================================
+       TAMAGOTCHI PEEK CONTAINER
+    ======================================== */
+    #tama-peek-container {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 80px;
+      overflow: hidden;
+      z-index: 100;
+      pointer-events: none;
+      display: none;
+    }
+
+    #tama-peek-container .tamagotchi-wrapper {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: top 0.4s ease-out;
+      box-shadow: none;
+    }
+
+    #tama-peek-container .peek-text {
+      position: absolute;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+      left: 100%;
+      top: 40px;
+      margin-left: 8px;
+    }
+
+    #tama-peek-container .peek-exclaim {
+      position: absolute;
+      font-size: 14px;
+      font-weight: bold;
+      color: #FF5722;
+      opacity: 0;
+      transition: opacity 0.2s;
+      left: 100%;
+      top: 30px;
+      margin-left: 8px;
+    }
+
+    /* ========================================
+       PIXEL HEARTS (Decorative & Floating)
+    ======================================== */
+    .pixel-heart-deco {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .pixel-heart-deco::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--rose-light);
+      clip-path: path('M15 5 C10 0, 0 3, 0 10 C0 17, 15 25, 15 25 C15 25, 30 17, 30 10 C30 3, 20 0, 15 5Z');
+    }
+
+    .floating-pixel-heart {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+    }
+
+    .floating-pixel-heart::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--rose);
+      clip-path: path('M5 1.5 C3.5 0, 0 1, 0 3.5 C0 6, 5 8.5, 5 8.5 C5 8.5, 10 6, 10 3.5 C10 1, 6.5 0, 5 1.5Z');
+    }
+
+    @keyframes floatHeartUp {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-60px) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    .floating-pixel-heart.animate {
+      animation: floatHeartUp 1.5s ease-out forwards;
+    }
+
+    /* ========================================
+       CANNON PIXEL ART
+    ======================================== */
+    #cannon {
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      grid-template-rows: repeat(16, 1fr);
+      width: 180px;
+      height: 120px;
+      image-rendering: pixelated;
+      position: absolute;
+    }
+
+    #cannon .pixel {
+      width: 100%;
+      height: 100%;
+    }
+
+    .px-barrel { background: #37474F; }
+    .px-barrel-shadow { background: #263238; }
+    .px-barrel-highlight { background: #546E7A; }
+    .px-base { background: #5D4037; }
+    .px-base-shadow { background: #3E2723; }
+    .px-wheel { background: #263238; }
+    .px-wheel-hub { background: #455A64; }
+
+    @keyframes cannonEnter {
+      0% {
+        transform: translateX(-200px);
+      }
+      85% {
+        transform: translateX(6px);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0); }
+      10% { transform: translate(-4px, 2px); }
+      20% { transform: translate(3px, -3px); }
+      30% { transform: translate(-2px, 4px); }
+      40% { transform: translate(4px, -2px); }
+      50% { transform: translate(-3px, 3px); }
+    }
+
+    body.shaking {
+      animation: screenShake 0.25s ease-out;
+    }
+
+    /* ========================================
+       PAGE 1: LANDING
+    ======================================== */
+    #landing .typewriter-text {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: clamp(24px, 5vw, 32px);
+      color: var(--text-primary);
+      margin: 24px 0 32px;
+      min-height: 1.4em;
+    }
+
+    #landing .typewriter-cursor {
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    #landing .nudge-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 60px;
+    }
+
+    #landing .continue-btn {
+      padding: 14px 48px;
+    }
+
+    /* ========================================
+       PAGE 2: QUESTION
+    ======================================== */
+    #question {
+      position: relative;
+    }
+
+    #question .question-text {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(32px, 8vw, 56px);
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    #question .question-text .word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    @keyframes wordReveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #question .subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    #question .subtitle.visible {
+      opacity: 1;
+    }
+
+    #question .button-row {
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #question .button-row.visible {
+      opacity: 1;
+    }
+
+    #question .no-btn {
+      transition: all 180ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    /* Decorative hearts */
+    #question .deco-heart-1 {
+      top: 20%;
+      left: 15%;
+      transform: rotate(-15deg);
+    }
+
+    #question .deco-heart-2 {
+      bottom: 25%;
+      right: 15%;
+      transform: rotate(20deg);
+    }
+
+    @keyframes textWobble {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-1deg); }
+      75% { transform: rotate(1deg); }
+    }
+
+    #question .question-text.wobbling {
+      animation: textWobble 0.3s ease-in-out infinite;
+    }
+
+    /* Transition text */
+    #question .transition-text {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: clamp(16px, 4vw, 20px);
+      color: var(--text-secondary);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #question .transition-text.visible {
+      opacity: 1;
+    }
+
+    /* ========================================
+       PAGE 3: CAPTCHA
+    ======================================== */
+    #captcha {
+      background: var(--bg-blush);
+    }
+
+    #captcha .header-text {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    #captcha .header-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(20px, 4vw, 28px);
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    #captcha .header-text p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    #captcha .header-text p.visible {
+      opacity: 1;
+    }
+
+    #captcha .captcha-container {
+      background: var(--bg-white);
+      border: 1px solid rgba(61, 44, 44, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(61, 44, 44, 0.07);
+      max-width: 440px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #captcha .captcha-header {
+      background: var(--rose);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 12px 12px 0 0;
+    }
+
+    #captcha .captcha-header span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: white;
+      font-weight: 500;
+    }
+
+    #captcha .captcha-header .shield {
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    #captcha .captcha-body {
+      padding: 20px;
+    }
+
+    #captcha .captcha-prompt {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    #captcha .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    #captcha .polaroid {
+      position: relative;
+      background: white;
+      padding: 6px 6px 22px 6px;
+      border: 1px solid rgba(61, 44, 44, 0.05);
+      box-shadow: 0 2px 6px rgba(61, 44, 44, 0.08);
+      border-radius: 3px;
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    #captcha .polaroid .photo-inner {
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #captcha .polaroid img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #captcha .polaroid.stock img {
+      filter: saturate(0.8) brightness(0.97);
+    }
+
+    #captcha .polaroid:hover {
+      transform: rotate(0deg) translateY(-3px) scale(1.03) !important;
+      box-shadow: 0 4px 12px rgba(61, 44, 44, 0.14);
+    }
+
+    #captcha .polaroid.selected {
+      border: 2px solid var(--rose);
+    }
+
+    @keyframes selectPop {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    #captcha .polaroid.popping {
+      animation: selectPop 0.15s ease-out;
+    }
+
+    #captcha .polaroid .checkmark {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 20px;
+      height: 20px;
+      background: var(--rose);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    #captcha .polaroid.selected .checkmark {
+      display: flex;
+    }
+
+    @keyframes flashRed {
+      0%, 100% { border-color: rgba(61, 44, 44, 0.05); }
+      50% { border-color: var(--red-error); }
+    }
+
+    #captcha .polaroid.rejected {
+      animation: flashRed 0.3s ease;
+    }
+
+    #captcha .toast {
+      position: absolute;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--red-error);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      left: 50%;
+      top: 50%;
+      transform: translateX(-50%);
+    }
+
+    @keyframes toastUp {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-25px);
+      }
+    }
+
+    #captcha .verify-btn {
+      width: 100%;
+    }
+
+    /* CAPTCHA Loading */
+    #captcha .loading-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+    }
+
+    #captcha .loading-dots .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--rose);
+      border-radius: 50%;
+      animation: dotBounce 0.6s ease-in-out infinite;
+    }
+
+    #captcha .loading-dots .dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    #captcha .loading-dots .dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes dotBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* CAPTCHA Success */
+    #captcha .success-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+    }
+
+    #captcha .success-message .checkmark-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--green-success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #captcha .success-message .check-icon {
+      width: 24px;
+      height: 24px;
+      stroke: white;
+      stroke-width: 3;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    #captcha .success-message span {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      color: var(--green-success);
+    }
+
+    /* Post-CAPTCHA state */
+    #captcha .post-captcha {
+      text-align: center;
+    }
+
+    #captcha .post-captcha .broken-text {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+    }
+
+    #captcha .post-captcha .button-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    #captcha .post-captcha .broken-no {
+      transform: rotate(3deg);
+      opacity: 0.4;
+      filter: grayscale(0.5);
+      cursor: not-allowed;
+      position: relative;
+      pointer-events: none;
+    }
+
+    #captcha .post-captcha .broken-no::after {
+      content: '';
+      position: absolute;
+      top: 30%;
+      left: 20%;
+      width: 60%;
+      height: 1px;
+      background: rgba(61, 44, 44, 0.4);
+      transform: rotate(30deg);
+    }
+
+    #captcha .post-captcha .nudge {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #captcha .post-captcha .nudge.visible {
+      opacity: 1;
+    }
+
+    /* Error state */
+    #captcha .error-message {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      color: var(--red-error);
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* ========================================
+       PAGE 5: CANNON TRANSITION
+    ======================================== */
+    #cannon-page {
+      background: var(--bg-white);
+    }
+
+    /* ========================================
+       PAGE 6: I LOVE YOU
+    ======================================== */
+    #iloveyou .love-text {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(36px, 8vw, 64px);
+      color: var(--text-primary);
+      text-shadow: 0 2px 4px rgba(232, 101, 122, 0.1);
+      opacity: 0;
+      transform: scale(0.96);
+      transition: all 1s ease-out;
+    }
+
+    #iloveyou .love-text.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #iloveyou .love-btn {
+      margin-top: 32px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #iloveyou .love-btn.visible {
+      opacity: 1;
+    }
+
+    #iloveyou .ellipsis {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(36px, 8vw, 64px);
+      color: var(--text-primary);
+    }
+
+    #iloveyou .ellipsis .dot {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    #iloveyou .ellipsis .dot.visible {
+      opacity: 1;
+    }
+
+    /* ========================================
+       BLACKOUT & 67 SEQUENCE
+    ======================================== */
+    #blackout-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 9998;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #blackout-overlay.active {
+      display: flex;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 1; }
+      20% { opacity: 0; }
+      40% { opacity: 1; }
+      60% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    #blackout-overlay.flickering {
+      animation: flicker 0.2s ease-out;
+    }
+
+    #blackout-overlay .sixty-seven {
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: clamp(44px, 16vw, 140px);
+      color: white;
+      text-shadow: 0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(232,101,122,0.2);
+      white-space: nowrap;
+      position: absolute;
+      transform: translateX(100vw);
+    }
+
+    @keyframes slide67 {
+      0% { transform: translateX(100vw); }
+      25% { transform: translateX(0); }
+      75% { transform: translateX(0); }
+      100% { transform: translateX(-100vw); }
+    }
+
+    #blackout-overlay .sixty-seven.sliding {
+      animation: slide67 2.5s cubic-bezier(0.22, 0, 0.36, 1) forwards;
+    }
+
+    @keyframes rumble {
+      0%, 100% { transform: translate(0, 0); }
+      10% { transform: translate(-2px, 1px); }
+      20% { transform: translate(1px, -2px); }
+      30% { transform: translate(-1px, 2px); }
+      40% { transform: translate(2px, -1px); }
+      50% { transform: translate(-2px, -1px); }
+      60% { transform: translate(1px, 2px); }
+      70% { transform: translate(-1px, -2px); }
+      80% { transform: translate(2px, 1px); }
+      90% { transform: translate(-1px, 1px); }
+    }
+
+    body.rumbling {
+      animation: rumble 0.1s linear infinite;
+    }
+
+    /* ========================================
+       PAGE 7: VICTORY
+    ======================================== */
+    #victory {
+      background: var(--bg-blush);
+    }
+
+    #victory .victory-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    #victory .victory-content > * {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+
+    @keyframes victoryReveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #victory .tamagotchi-section {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    #victory .its-a-date {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(28px, 5vw, 42px);
+      color: var(--rose);
+      margin-bottom: 16px;
+    }
+
+    #victory .date-line {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: clamp(16px, 3vw, 20px);
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    #victory .time-line {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: clamp(14px, 2.5vw, 18px);
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    #victory .recreating {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: clamp(18px, 3.5vw, 24px);
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    #victory .surprises {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: clamp(15px, 3vw, 20px);
+      color: var(--rose);
+      opacity: 0.65;
+      margin-bottom: 24px;
+    }
+
+    #victory .calendar-btn {
+      background: var(--btn-secondary-bg);
+      color: var(--rose);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      padding: 10px 24px;
+      border: 1px solid rgba(232, 101, 122, 0.15);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #victory .calendar-btn:hover {
+      background: var(--btn-secondary-hover);
+    }
+
+    #victory .footer {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ========================================
+       RESPONSIVE
+    ======================================== */
+    @media (max-width: 480px) {
+      #captcha .captcha-body {
+        padding: 16px;
+      }
+
+      #captcha .polaroid {
+        padding: 4px 4px 16px 4px;
+      }
+
+      #tama-peek-container {
+        width: 100px;
+        height: 70px;
+      }
+
+      .btn {
+        min-height: 48px;
+        min-width: 44px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Sound Toggle -->
-    <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">
-        <span id="soundIcon"></span>
-    </button>
+  <!-- Sound Toggle -->
+  <button id="sound-toggle" aria-label="Toggle sound">
+    <span class="sound-icon">🔊</span>
+  </button>
 
-    <!-- Floating Particles -->
-    <div class="particles-container" id="particlesContainer"></div>
+  <!-- Particle Layer -->
+  <div id="particle-layer"></div>
 
-    <!-- Popup Tamagotchi -->
-    <div class="popup-tamagotchi" id="popupTamagotchi">
-        <div class="pixel-exclaim"></div>
-        <div class="pixel-tear"></div>
-        <div class="pixel-grid" id="popupTamaGrid"></div>
+  <!-- Tamagotchi Peek Container (for Question page) -->
+  <div id="tama-peek-container">
+    <div class="tamagotchi-wrapper" id="peek-tama"></div>
+    <span class="peek-text" id="peek-text"></span>
+    <span class="peek-exclaim" id="peek-exclaim">!</span>
+  </div>
+
+  <!-- Blackout Overlay -->
+  <div id="blackout-overlay">
+    <span class="sixty-seven">SIIIIIXXX SEVVENNNNNN</span>
+  </div>
+
+  <!-- PAGE 1: Landing -->
+  <div id="landing" class="page active">
+    <div class="page-content">
+      <div class="tamagotchi-wrapper floating" id="landing-tama">
+        <!-- Tamagotchi will be rendered by JS -->
+      </div>
+      <div class="typewriter-text" id="typewriter">
+        <span id="typewriter-content"></span><span class="typewriter-cursor">|</span>
+      </div>
+      <button class="btn btn-primary btn-pulse continue-btn" id="continue-btn">Continue</button>
+      <p class="nudge-text">tap continue, i promise it's worth it</p>
     </div>
+  </div>
 
-    <!-- Page 1: Landing -->
-    <div class="page active" id="landing">
-        <div class="tamagotchi-wrapper">
-            <div class="tamagotchi-glow"></div>
-            <div class="tamagotchi idle" id="landingTamagotchi">
-                <div class="pixel-grid" id="landingTamaGrid"></div>
-            </div>
-        </div>
-        <div class="typewriter" id="typewriter">
-            <span id="typewriterText"></span>
-            <span class="cursor"></span>
-        </div>
-        <button class="btn btn-primary pulse" id="continueBtn" style="opacity: 0;">Continue</button>
+  <!-- PAGE 2: Question -->
+  <div id="question" class="page">
+    <div class="pixel-heart-deco deco-heart-1"></div>
+    <div class="pixel-heart-deco deco-heart-2"></div>
+    <div class="page-content" id="question-content">
+      <h1 class="question-text" id="question-text">
+        <span class="word">Will</span>
+        <span class="word">you</span>
+        <span class="word">be</span>
+        <span class="word">my</span>
+        <span class="word">Valentine?</span>
+      </h1>
+      <p class="subtitle" id="question-subtitle">(choose wisely)</p>
+      <div class="button-row" id="question-buttons">
+        <button class="btn btn-primary yes-btn" id="yes-btn-question">Yes</button>
+        <button class="btn btn-secondary no-btn" id="no-btn">No</button>
+      </div>
+      <p class="transition-text" id="transition-text">Okay, you seem serious. Prove it.</p>
     </div>
+  </div>
 
-    <!-- Page 2: Question -->
-    <div class="page" id="question">
-        <p class="question-text" id="questionText">
-            <span class="word">Will</span>
-            <span class="word">you</span>
-            <span class="word">be</span>
-            <span class="word">my</span>
-            <span class="word">Valentine?</span>
-        </p>
-        <div class="buttons-container" id="buttonsContainer">
-            <button class="btn btn-primary" id="yesBtn">Yes</button>
-            <button class="btn btn-secondary no-btn" id="noBtn">No</button>
+  <!-- PAGE 3: CAPTCHA -->
+  <div id="captcha" class="page">
+    <div class="page-content">
+      <div class="header-text">
+        <h2>One more thing...</h2>
+        <p id="captcha-subheader">Complete this security check to continue</p>
+      </div>
+      <div class="captcha-container" id="captcha-container">
+        <div class="captcha-header">
+          <span>reCAPTCHA</span>
+          <div class="shield">🛡️</div>
         </div>
-    </div>
-
-    <!-- Page 3: CAPTCHA -->
-    <div class="page" id="captcha">
-        <h2 class="captcha-header">One more thing...</h2>
-        <p class="captcha-subheader">Complete this security check to continue</p>
-        <div class="captcha-box">
-            <p class="captcha-prompt">Select all images containing husband material</p>
-            <div class="captcha-grid" id="captchaGrid"></div>
-            <button class="captcha-verify-btn" id="verifyBtn" disabled>Verify</button>
-            <div class="captcha-status" id="captchaStatus">
-                <div class="captcha-spinner" id="captchaSpinner">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
-                <div class="captcha-checkmark" id="captchaCheckmark" style="display:none;">&#10003;</div>
-                <p class="captcha-message" id="captchaMessage"></p>
-            </div>
+        <div class="captcha-body" id="captcha-body">
+          <p class="captcha-prompt">Select all images containing husband material</p>
+          <div class="photo-grid" id="photo-grid">
+            <!-- Photos rendered by JS -->
+          </div>
+          <button class="btn btn-primary verify-btn" id="verify-btn" disabled>Verify</button>
         </div>
-        <div class="captcha-result-area" id="captchaResultArea">
-            <p class="captcha-message" id="captchaResultText"></p>
-            <div class="captcha-result-buttons">
-                <button class="btn btn-primary pulse" id="captchaYesBtn" style="display:none;">Yes</button>
-                <button class="btn btn-broken" id="captchaNoBroken" style="display:none;">No</button>
-            </div>
-            <p class="captcha-hint" id="captchaHint">Looks like there's only one option...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: Cannon -->
+  <div id="cannon-page" class="page">
+    <div id="cannon">
+      <!-- Cannon pixel art rendered by JS -->
+    </div>
+  </div>
+
+  <!-- PAGE 6: I Love You -->
+  <div id="iloveyou" class="page">
+    <div class="page-content">
+      <h1 class="love-text" id="love-text">I love you</h1>
+      <div class="ellipsis" id="ellipsis" style="display: none;">
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+        <span class="dot">.</span>
+      </div>
+      <button class="btn btn-primary btn-heartbeat love-btn" id="love-btn">I love you too!</button>
+    </div>
+  </div>
+
+  <!-- PAGE 7: Victory -->
+  <div id="victory" class="page">
+    <div class="victory-content">
+      <div class="tamagotchi-section">
+        <div class="tamagotchi-wrapper energetic" id="victory-tama">
+          <!-- Tamagotchi rendered by JS -->
         </div>
+      </div>
+      <h1 class="its-a-date">It's a date.</h1>
+      <p class="date-line">Saturday, February 14th</p>
+      <p class="time-line">10:00 AM</p>
+      <p class="recreating">We're recreating our first date.</p>
+      <p class="surprises">(plus a few surprises)</p>
+      <button class="calendar-btn" id="calendar-btn">Add to Calendar</button>
     </div>
+    <p class="footer">made with way too much effort and a little help from AI</p>
+  </div>
 
-    <!-- Page 5: Cannon Transition -->
-    <div class="page" id="cannon-transition">
-        <div class="cannon-container" id="cannon">
-            <div class="cannon-pixel-grid" id="cannonGrid"></div>
-        </div>
-    </div>
+  <!-- Audio -->
+  <audio id="audio-67" preload="auto">
+    <source src="assets/67-audio.mp3" type="audio/mpeg">
+  </audio>
 
-    <!-- Page 6: I Love You -->
-    <div class="page" id="iloveyou">
-        <p class="love-text" id="loveText">I love you</p>
-        <button class="btn btn-primary love-btn" id="loveTooBtn">I love you too!</button>
-    </div>
+  <script>
+    // ========================================
+    // STATE
+    // ========================================
+    const state = {
+      currentPage: 'landing',
+      noClickCount: 0,
+      captchaSelections: [],
+      soundEnabled: true,
+      transitioning: false,
+      lastClickTime: 0
+    };
 
-    <!-- Blackout Page -->
-    <div class="page" id="blackout">
-        <p class="sixtyseven-text" id="sixtysevenText">SIIIIIXXX SEVVENNNNNN</p>
-    </div>
+    // ========================================
+    // DEBOUNCE
+    // ========================================
+    function debounce(delay = 200) {
+      const now = Date.now();
+      if (now - state.lastClickTime < delay) return false;
+      state.lastClickTime = now;
+      return true;
+    }
 
-    <!-- Page 7: Victory -->
-    <div class="page" id="victory">
-        <div class="victory-tamagotchi">
-            <div class="tamagotchi-glow"></div>
-            <div class="victory-hearts" id="victoryHearts"></div>
-            <div class="tamagotchi celebrating" id="victoryTamagotchi">
-                <div class="pixel-grid" id="victoryTamaGrid"></div>
-            </div>
-        </div>
-        <div class="victory-content">
-            <h1 class="victory-title victory-line">It's a date.</h1>
-            <p class="victory-date victory-line">Saturday, February 14th</p>
-            <p class="victory-time victory-line">10:00 AM</p>
-            <p class="victory-personal victory-line">We're recreating our first date.</p>
-            <p class="victory-hint victory-line">(plus a few surprises)</p>
-            <a href="#" class="calendar-link victory-line" id="calendarLink">Add to Calendar</a>
-        </div>
-    </div>
+    // ========================================
+    // TAMAGOTCHI PIXEL ART
+    // ========================================
+    // 16x16 grid, character codes:
+    // _ = empty, B = body (yellow), E = ear/outline (navy), W = eye (navy),
+    // H = highlight (white), C = cheek (pink), M = mouth (red), T = tear (blue)
+    const TAMA_IDLE = [
+      '____EEEEEEEE____',
+      '___EEEEEEEEEE___',
+      '__EEBBBBBBBBEE__',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBWWHBBWWHBBE_',
+      '_EBBWHBBBBWHBBE_',
+      '_ECBBBBBBBBBBCE_',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBBBMMMMBBBBE_',
+      '_EBBBBBBBBBBBBE_',
+      '__EBBBBBBBBBBER_',
+      '__EEBBBBBBBBEE__',
+      '___EEBBBBBBEEE__',
+      '____EEBBBBEE____',
+      '_____EEBBEEE____',
+      '______EEEE______'
+    ];
 
-    <script>
-        // ============================================
-        // STATE
-        // ============================================
-        const state = {
-            currentPage: 'landing',
-            noClickCount: 0,
-            captchaSelections: [],
-            soundEnabled: true,
-            isTransitioning: false,
-            lastButtonClick: 0
-        };
+    const TAMA_EXCITED = [
+      '___HH______HH___',
+      '__HHHH____HHHH__',
+      '____EEEEEEEE____',
+      '___EEEEEEEEEE___',
+      '__EEBBBBBBBBEE__',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBEEBBBBEEBBE_',
+      '_ECBBBBBBBBBBCE_',
+      '_EBBBBMMMMBBBE_R',
+      'REBBBBBBBBBBBBER',
+      '__EBBBBBBBBBE___',
+      '__EEBBBBBBBBEE__',
+      '___EEBBBBBBEE___',
+      '____EEBBBBEE____',
+      '_____EEBBEEE____',
+      '______EEEE______'
+    ];
 
-        // ============================================
-        // PIXEL ART DATA
-        // ============================================
-        const tamaIdle = [
-            [0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0],
-            [0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0],
-            [0,0,3,3,3,1,1,1,1,1,1,3,3,3,0,0],
-            [0,0,1,1,1,2,2,2,2,2,2,1,1,1,0,0],
-            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
-            [0,1,2,2,4,4,2,2,2,2,4,4,2,2,1,0],
-            [0,1,2,2,4,5,2,2,2,2,4,5,2,2,1,0],
-            [0,1,2,6,2,2,2,2,2,2,2,2,6,2,1,0],
-            [0,1,2,2,2,2,2,7,7,2,2,2,2,2,1,0],
-            [0,1,2,2,2,2,7,2,2,7,2,2,2,2,1,0],
-            [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],
-            [0,1,2,1,2,2,2,2,2,2,2,2,1,2,1,0],
-            [0,1,2,2,1,1,2,2,2,2,1,1,2,2,1,0],
-            [0,0,1,2,2,2,1,1,1,1,2,2,2,1,0,0],
-            [0,0,0,1,1,2,2,2,2,2,2,1,1,0,0,0],
-            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0]
-        ];
+    const TAMA_SAD = [
+      '____EEEEEEEE____',
+      '___EEEEEEEEEE___',
+      '__EEBBBBBBBBEE__',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBEEBBBBEEBBE_',
+      '_ECBWWHBBBBWHCE_',
+      '_EBBBBBBBBBBBET_',
+      '_EBBBBBBBBBBBBE_',
+      '_EBBBBNNNNBBBBE_',
+      '__EBBBBBBBBBBE__',
+      '__EEBBBBBBBBEE__',
+      '___EEBBBBBBEE___',
+      '____EBBBBBBE____',
+      '_____EBBBBEE____',
+      '______EEEE______'
+    ];
 
-        const tamaExcited = [
-            [0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0],
-            [0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0],
-            [0,0,3,3,3,1,1,1,1,1,1,3,3,3,0,0],
-            [0,0,1,1,1,2,2,2,2,2,2,1,1,1,0,0],
-            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
-            [0,1,2,2,1,1,2,2,2,2,1,1,2,2,1,0],
-            [0,1,2,2,4,5,2,2,2,2,4,5,2,2,1,0],
-            [0,1,2,6,2,2,2,2,2,2,2,2,6,2,1,0],
-            [0,1,2,2,2,2,7,7,7,7,2,2,2,2,1,0],
-            [0,1,2,2,2,7,2,2,2,2,7,2,2,2,1,0],
-            [1,2,1,2,2,2,2,2,2,2,2,2,2,1,2,1],
-            [1,2,2,1,2,2,2,2,2,2,2,2,1,2,2,1],
-            [0,1,2,2,1,1,2,2,2,2,1,1,2,2,1,0],
-            [0,0,1,2,2,2,1,1,1,1,2,2,2,1,0,0],
-            [0,0,0,1,1,2,2,2,2,2,2,1,1,0,0,0],
-            [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0]
-        ];
+    const TAMA_COLORS = {
+      'B': 'px-body',
+      'E': 'px-ear',
+      'W': 'px-eye',
+      'H': 'px-eye-highlight',
+      'C': 'px-cheek',
+      'M': 'px-mouth',
+      'N': 'px-mouth',
+      'R': 'px-body',
+      'T': 'px-tear',
+      '_': ''
+    };
 
-        const tamaSad = [
-            [0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0],
-            [0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0],
-            [0,0,3,3,3,1,1,1,1,1,1,3,3,3,0,0],
-            [0,0,1,1,1,2,2,2,2,2,2,1,1,1,0,0],
-            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
-            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
-            [0,1,2,2,4,4,2,2,2,2,4,4,2,2,1,0],
-            [0,1,2,6,4,5,2,2,2,2,4,5,6,2,1,0],
-            [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
-            [0,1,2,2,2,2,2,1,1,2,2,2,2,2,1,0],
-            [0,0,1,2,2,2,1,2,2,1,2,2,2,1,0,0],
-            [0,1,2,1,2,2,2,2,2,2,2,2,1,2,1,0],
-            [0,0,1,2,1,1,2,2,2,2,1,1,2,1,0,0],
-            [0,0,0,1,2,2,1,1,1,1,2,2,1,0,0,0],
-            [0,0,0,0,1,1,2,2,2,2,1,1,0,0,0,0],
-            [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0]
-        ];
+    function renderTamagotchi(container, sprite) {
+      container.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'tamagotchi';
 
-        const colorMap = {
-            0: 'p-clear', 1: 'p-outline', 2: 'p-body', 3: 'p-ear',
-            4: 'p-eye', 5: 'p-eye-highlight', 6: 'p-cheek', 7: 'p-mouth'
-        };
-
-        const cannonData = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,3,3,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,1,1,3,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,1,1,1,3,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,1,1,1,3,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,3,1,1,2,2,2,3,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,3,1,1,2,2,2,3,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,3,1,1,2,2,2,3,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,3,1,1,2,2,2,3,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,3,1,1,2,2,2,3,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0],
-            [0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0],
-            [0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0],
-            [0,0,5,5,6,5,0,0,0,0,0,0,0,0,0,0,5,5,6,5,0,0,0,0],
-            [0,5,6,6,6,6,5,0,0,0,0,0,0,0,0,5,6,6,6,6,5,0,0,0],
-            [0,0,5,5,6,5,0,0,0,0,0,0,0,0,0,0,5,5,6,5,0,0,0,0]
-        ];
-
-        const cannonColorMap = {
-            0: 'c-clear', 1: 'c-barrel-light', 2: 'c-barrel-dark',
-            3: 'c-barrel', 4: 'c-base', 5: 'c-wheel', 6: 'c-wheel-hub'
-        };
-
-        // ============================================
-        // RENDER PIXEL ART
-        // ============================================
-        function renderPixelGrid(container, data, colorMapObj) {
-            container.innerHTML = '';
-            data.forEach(row => {
-                row.forEach(pixel => {
-                    const div = document.createElement('div');
-                    div.className = `pixel ${colorMapObj[pixel]}`;
-                    container.appendChild(div);
-                });
-            });
+      for (let row of sprite) {
+        for (let char of row) {
+          const pixel = document.createElement('div');
+          pixel.className = 'pixel';
+          if (TAMA_COLORS[char]) {
+            pixel.classList.add(TAMA_COLORS[char]);
+          }
+          grid.appendChild(pixel);
         }
+      }
+      container.appendChild(grid);
+    }
 
-        function setTamagotchiState(gridId, stateName) {
-            const grid = document.getElementById(gridId);
-            const stateMap = { idle: tamaIdle, excited: tamaExcited, sad: tamaSad };
-            renderPixelGrid(grid, stateMap[stateName] || tamaIdle, colorMap);
+    // ========================================
+    // CANNON PIXEL ART
+    // ========================================
+    const CANNON_SPRITE = [
+      '________________________',
+      '________________________',
+      '____________HHHH________',
+      '___________HBBBBH_______',
+      '__________HBBBBBSH______',
+      '_________HBBBBBBSSH_____',
+      '________HBBBBBBBSSH_____',
+      '_______HBBBBBBBBSSH_____',
+      '______HBBBBBBBBBSS______',
+      '______DDDDDDDDDDD_______',
+      '_____DDDDDDDDDDDD_______',
+      '_____DDDSSSDDDDDDD______',
+      '____WWWW____WWWW________',
+      '___WCCWW____WCCWW_______',
+      '___WWWWW____WWWWW_______',
+      '____WWW______WWW________'
+    ];
+
+    const CANNON_COLORS = {
+      'B': 'px-barrel',
+      'S': 'px-barrel-shadow',
+      'H': 'px-barrel-highlight',
+      'D': 'px-base',
+      'W': 'px-wheel',
+      'C': 'px-wheel-hub',
+      '_': ''
+    };
+
+    function renderCannon(container) {
+      container.innerHTML = '';
+
+      for (let row of CANNON_SPRITE) {
+        for (let char of row) {
+          const pixel = document.createElement('div');
+          pixel.className = 'pixel';
+          if (CANNON_COLORS[char]) {
+            pixel.classList.add(CANNON_COLORS[char]);
+          }
+          container.appendChild(pixel);
         }
+      }
+    }
 
-        // ============================================
-        // UTILITIES
-        // ============================================
-        function debounce(func, wait = 200) {
-            return function(...args) {
-                const now = Date.now();
-                if (now - state.lastButtonClick < wait) return;
-                state.lastButtonClick = now;
-                func.apply(this, args);
-            };
+    // ========================================
+    // PARTICLE SYSTEM
+    // ========================================
+    function createParticles() {
+      const layer = document.getElementById('particle-layer');
+      layer.innerHTML = '';
+      const isMobile = window.innerWidth < 768;
+      const particleCount = isMobile ? 8 : 14;
+
+      for (let i = 0; i < particleCount; i++) {
+        const isHeart = i < (isMobile ? 4 : 7);
+        const particle = document.createElement('div');
+        particle.className = `particle ${isHeart ? 'particle-heart' : 'particle-sparkle'}`;
+
+        const size = isHeart ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
+        const opacity = 0.15 + Math.random() * 0.2;
+        const duration = 10 + Math.random() * 5;
+        const delay = Math.random() * duration;
+        const startX = Math.random() * 100;
+        const drift = -40 + Math.random() * 80;
+        const rotation = isHeart ? (-20 + Math.random() * 40) : 0;
+
+        particle.style.cssText = `
+          left: ${startX}%;
+          width: ${size}px;
+          height: ${size}px;
+          --particle-opacity: ${opacity};
+          --drift: ${drift}px;
+          --rotation: ${rotation}deg;
+          animation: floatUp ${duration}s linear ${delay}s infinite;
+        `;
+
+        layer.appendChild(particle);
+      }
+    }
+
+    // ========================================
+    // SPARKLE TRAIL (Desktop Only)
+    // ========================================
+    let lastSparkleTime = 0;
+    function initSparkleTrail() {
+      if (window.matchMedia('(hover: none)').matches) return;
+
+      document.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastSparkleTime < 60) return;
+        lastSparkleTime = now;
+
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle-trail';
+        sparkle.style.left = e.clientX + (Math.random() * 10 - 5) + 'px';
+        sparkle.style.top = e.clientY + (Math.random() * 10 - 5) + 'px';
+        sparkle.style.background = Math.random() > 0.5 ? 'var(--rose)' : 'var(--gold)';
+        document.body.appendChild(sparkle);
+
+        setTimeout(() => sparkle.remove(), 300);
+      });
+    }
+
+    // ========================================
+    // SOUND TOGGLE
+    // ========================================
+    function initSoundToggle() {
+      const btn = document.getElementById('sound-toggle');
+      const icon = btn.querySelector('.sound-icon');
+
+      btn.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        icon.textContent = state.soundEnabled ? '🔊' : '🔇';
+      });
+    }
+
+    // ========================================
+    // TYPEWRITER EFFECT
+    // ========================================
+    function typeWriter(text, callback) {
+      const content = document.getElementById('typewriter-content');
+      let i = 0;
+
+      function type() {
+        if (i < text.length) {
+          content.textContent += text.charAt(i);
+          i++;
+          const delay = 50 + (Math.random() * 40 - 20);
+          setTimeout(type, delay);
+        } else if (callback) {
+          callback();
         }
+      }
 
-        // ============================================
-        // ELEMENTS
-        // ============================================
-        const soundToggle = document.getElementById('soundToggle');
-        const soundIcon = document.getElementById('soundIcon');
-        const particlesContainer = document.getElementById('particlesContainer');
-        const landingTamagotchi = document.getElementById('landingTamagotchi');
-        const continueBtn = document.getElementById('continueBtn');
-        const yesBtn = document.getElementById('yesBtn');
-        const noBtn = document.getElementById('noBtn');
-        const popupTamagotchi = document.getElementById('popupTamagotchi');
-        const captchaGrid = document.getElementById('captchaGrid');
-        const verifyBtn = document.getElementById('verifyBtn');
+      type();
+    }
 
-        // Audio
-        let audio67;
-        try {
-            audio67 = new Audio('assets/67-audio.mp3');
-            audio67.load();
-        } catch (e) {}
+    // ========================================
+    // PAGE TRANSITIONS
+    // ========================================
+    function transitionTo(pageId) {
+      if (state.transitioning) return;
+      state.transitioning = true;
 
-        // ============================================
-        // CURSOR SPARKLE TRAIL (Desktop only)
-        // ============================================
-        let lastSparkle = 0;
-        const isDesktop = window.matchMedia('(hover: hover)').matches;
+      const currentPage = document.querySelector('.page.active');
+      const nextPage = document.getElementById(pageId);
 
-        if (isDesktop) {
-            document.addEventListener('mousemove', (e) => {
-                const now = Date.now();
-                if (now - lastSparkle < 60) return;
-                lastSparkle = now;
+      if (currentPage) {
+        currentPage.classList.add('exiting');
+        setTimeout(() => {
+          currentPage.classList.remove('active', 'exiting');
+        }, 400);
+      }
 
-                const sparkle = document.createElement('div');
-                sparkle.className = 'sparkle';
-                sparkle.style.left = (e.clientX + (Math.random() - 0.5) * 8) + 'px';
-                sparkle.style.top = (e.clientY + (Math.random() - 0.5) * 8) + 'px';
-                sparkle.style.background = Math.random() > 0.5 ? '#E8657A' : '#E8B86D';
-                document.body.appendChild(sparkle);
+      setTimeout(() => {
+        nextPage.classList.add('active', 'entering');
+        state.currentPage = pageId;
 
-                setTimeout(() => sparkle.remove(), 300);
-            });
-        }
+        setTimeout(() => {
+          nextPage.classList.remove('entering');
+          state.transitioning = false;
+          initPage(pageId);
+        }, 400);
+      }, currentPage ? 400 : 0);
+    }
 
-        // ============================================
-        // PRELOAD ASSETS
-        // ============================================
-        function preloadAssets() {
-            const images = [
-                ...Array.from({length: 6}, (_, i) => `assets/captcha/lachie-${i + 1}.jpg`),
-                ...Array.from({length: 3}, (_, i) => `assets/captcha/stock-${i + 1}.jpg`)
-            ];
-            images.forEach(src => {
-                const img = new Image();
-                img.src = src;
-            });
-        }
+    // ========================================
+    // LANDING PAGE
+    // ========================================
+    let landingInitialized = false;
+    function initLanding() {
+      if (landingInitialized) return;
+      landingInitialized = true;
 
-        // ============================================
-        // SOUND TOGGLE
-        // ============================================
-        function updateSoundIcon() {
-            soundIcon.textContent = state.soundEnabled ? '\u{1F50A}' : '\u{1F507}';
-        }
+      renderTamagotchi(document.getElementById('landing-tama'), TAMA_IDLE);
+      typeWriter("hey beautiful, i made something for you...", null);
 
-        soundToggle.addEventListener('click', () => {
-            state.soundEnabled = !state.soundEnabled;
-            updateSoundIcon();
+      const continueBtn = document.getElementById('continue-btn');
+      const tamaWrapper = document.getElementById('landing-tama');
+      let isNearButton = false;
+
+      // Desktop: tilt toward cursor and excitement near button
+      if (!window.matchMedia('(hover: none)').matches) {
+        document.addEventListener('mousemove', (e) => {
+          if (state.currentPage !== 'landing') return;
+
+          const rect = tamaWrapper.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const angleX = (e.clientX - centerX) / window.innerWidth * 5;
+          tamaWrapper.style.transform = `translateY(${tamaWrapper.classList.contains('floating') ? '-5px' : '0'}) rotate(${angleX}deg)`;
+
+          // Check proximity to continue button
+          const btnRect = continueBtn.getBoundingClientRect();
+          const btnCenterX = btnRect.left + btnRect.width / 2;
+          const btnCenterY = btnRect.top + btnRect.height / 2;
+          const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+
+          if (distance < 150 && !isNearButton) {
+            isNearButton = true;
+            renderTamagotchi(tamaWrapper, TAMA_EXCITED);
+            tamaWrapper.classList.remove('floating');
+            tamaWrapper.classList.add('bouncing');
+
+            // Float a heart
+            const heart = document.createElement('div');
+            heart.className = 'floating-pixel-heart animate';
+            heart.style.left = '50%';
+            heart.style.top = '-20px';
+            heart.style.transform = 'translateX(-50%)';
+            tamaWrapper.appendChild(heart);
+            setTimeout(() => heart.remove(), 1500);
+
+            setTimeout(() => {
+              tamaWrapper.classList.remove('bouncing');
+              tamaWrapper.classList.add('floating');
+            }, 300);
+          } else if (distance >= 150 && isNearButton) {
+            isNearButton = false;
+            renderTamagotchi(tamaWrapper, TAMA_IDLE);
+          }
         });
+      }
 
-        // ============================================
-        // PARTICLES
-        // ============================================
-        function createParticles() {
-            const isMobile = window.innerWidth <= 480;
-            const count = isMobile ? 6 : 12;
-            particlesContainer.innerHTML = '';
+      continueBtn.addEventListener('click', () => {
+        if (!debounce()) return;
 
-            for (let i = 0; i < count; i++) {
-                const particle = document.createElement('div');
-                const isHeart = Math.random() > 0.4;
+        tamaWrapper.classList.remove('floating', 'bouncing');
+        tamaWrapper.classList.add('waving');
 
-                particle.className = `particle ${isHeart ? 'heart' : 'sparkle'}`;
-                if (isHeart) particle.textContent = '\u2764';
+        setTimeout(() => {
+          transitionTo('question');
+        }, 500);
+      });
+    }
 
-                const size = isHeart ? (10 + Math.random() * 4) : (3 + Math.random() * 2);
-                const opacity = isHeart ? (0.3 + Math.random() * 0.2) : (0.2 + Math.random() * 0.2);
-                const duration = 8 + Math.random() * 4;
-                const delay = Math.random() * duration;
-                const drift = (Math.random() - 0.5) * 60;
+    // ========================================
+    // QUESTION PAGE
+    // ========================================
+    function initQuestion() {
+      const words = document.querySelectorAll('#question-text .word');
+      const subtitle = document.getElementById('question-subtitle');
+      const buttons = document.getElementById('question-buttons');
+      const noBtn = document.getElementById('no-btn');
+      const yesBtn = document.getElementById('yes-btn-question');
+      const questionText = document.getElementById('question-text');
+      const transitionText = document.getElementById('transition-text');
 
-                particle.style.setProperty('--size', size + 'px');
-                particle.style.setProperty('--opacity', opacity);
-                particle.style.setProperty('--duration', duration + 's');
-                particle.style.setProperty('--delay', delay + 's');
-                particle.style.setProperty('--drift', drift + 'px');
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.fontSize = size + 'px';
+      // Reset state
+      state.noClickCount = 0;
+      noBtn.style.position = '';
+      noBtn.style.left = '';
+      noBtn.style.top = '';
+      questionText.classList.remove('wobbling');
+      questionText.style.opacity = '1';
+      subtitle.textContent = '(choose wisely)';
+      subtitle.classList.remove('visible');
+      buttons.classList.remove('visible');
+      transitionText.classList.remove('visible');
+      words.forEach(w => w.style.animation = '');
 
-                particlesContainer.appendChild(particle);
+      // Word reveal animation
+      words.forEach((word, i) => {
+        setTimeout(() => {
+          word.style.animation = 'wordReveal 0.3s ease-out forwards';
+        }, i * 150);
+      });
+
+      // Show subtitle after words
+      setTimeout(() => subtitle.classList.add('visible'), words.length * 150 + 300);
+
+      // Show buttons
+      setTimeout(() => buttons.classList.add('visible'), words.length * 150 + 600);
+
+      // Set up peek container
+      const peekContainer = document.getElementById('tama-peek-container');
+      const peekTama = document.getElementById('peek-tama');
+      peekContainer.style.display = 'block';
+      renderTamagotchi(peekTama, TAMA_IDLE);
+
+      // Yes button goes to cannon
+      yesBtn.onclick = () => {
+        if (!debounce()) return;
+        peekContainer.style.display = 'none';
+        transitionTo('cannon-page');
+        setTimeout(() => initCannonSequence(), 400);
+      };
+
+      // No button dodge
+      noBtn.onclick = (e) => {
+        if (!debounce(300)) return;
+        if (state.noClickCount >= 5) return;
+
+        state.noClickCount++;
+        handleDodgeReaction(state.noClickCount);
+
+        if (state.noClickCount < 5) {
+          // Teleport the button
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const yesRect = yesBtn.getBoundingClientRect();
+
+          let newX, newY, attempts = 0;
+          do {
+            newX = 20 + Math.random() * (vw - 160);
+            newY = 100 + Math.random() * (vh - 160);
+            attempts++;
+          } while (
+            attempts < 50 &&
+            newX < yesRect.right + 40 &&
+            newX + 130 > yesRect.left - 40 &&
+            newY < yesRect.bottom + 40 &&
+            newY + 50 > yesRect.top - 40
+          );
+
+          noBtn.style.position = 'fixed';
+          noBtn.style.left = newX + 'px';
+          noBtn.style.top = newY + 'px';
+        }
+      };
+    }
+
+    function handleDodgeReaction(count) {
+      const peekTama = document.getElementById('peek-tama');
+      const peekText = document.getElementById('peek-text');
+      const peekExclaim = document.getElementById('peek-exclaim');
+      const subtitle = document.getElementById('question-subtitle');
+      const questionText = document.getElementById('question-text');
+      const buttons = document.getElementById('question-buttons');
+      const transitionText = document.getElementById('transition-text');
+      const peekContainer = document.getElementById('tama-peek-container');
+      const tamaWrapper = peekContainer.querySelector('.tamagotchi-wrapper');
+
+      // Reset peek state
+      tamaWrapper.style.top = '-120px';
+      peekText.style.opacity = '0';
+      peekExclaim.style.opacity = '0';
+
+      if (count === 1) {
+        // Surprise - peek with "!"
+        renderTamagotchi(peekTama, TAMA_IDLE);
+        setTimeout(() => {
+          tamaWrapper.style.top = '20px';
+          peekExclaim.style.opacity = '1';
+        }, 50);
+
+        setTimeout(() => {
+          tamaWrapper.style.top = '-120px';
+          peekExclaim.style.opacity = '0';
+        }, 750);
+
+      } else if (count === 2) {
+        // Disbelief - wiggle + "wait what"
+        renderTamagotchi(peekTama, TAMA_IDLE);
+        setTimeout(() => {
+          tamaWrapper.style.top = '10px';
+          peekText.textContent = 'wait what';
+          peekText.style.opacity = '1';
+
+          // Wiggle
+          let wiggle = 0;
+          const wiggleInterval = setInterval(() => {
+            wiggle++;
+            tamaWrapper.style.transform = `translateX(-50%) rotate(${wiggle % 2 ? 6 : -6}deg)`;
+            if (wiggle >= 4) {
+              clearInterval(wiggleInterval);
+              tamaWrapper.style.transform = 'translateX(-50%) rotate(0deg)';
             }
+          }, 100);
+        }, 50);
+
+        setTimeout(() => {
+          tamaWrapper.style.top = '-120px';
+          peekText.style.opacity = '0';
+        }, 1200);
+
+      } else if (count === 3) {
+        // Emotional damage - sad, slow, teardrop
+        renderTamagotchi(peekTama, TAMA_SAD);
+        tamaWrapper.style.transition = 'top 0.8s ease-out';
+
+        setTimeout(() => {
+          tamaWrapper.style.top = '5px';
+        }, 50);
+
+        setTimeout(() => {
+          tamaWrapper.style.transition = 'top 1s ease-in';
+          tamaWrapper.style.top = '-120px';
+        }, 1500);
+
+        setTimeout(() => {
+          tamaWrapper.style.transition = 'top 0.4s ease-out';
+        }, 2500);
+
+        // Change subtitle
+        subtitle.style.opacity = '0';
+        setTimeout(() => {
+          subtitle.textContent = "(you're really doing this?)";
+          subtitle.style.opacity = '1';
+        }, 300);
+
+      } else if (count === 4) {
+        // Giving up - barely peeks
+        renderTamagotchi(peekTama, TAMA_SAD);
+        setTimeout(() => {
+          tamaWrapper.style.top = '50px'; // Just ears visible
+        }, 50);
+
+        setTimeout(() => {
+          tamaWrapper.style.top = '-120px';
+        }, 450);
+
+      } else if (count === 5) {
+        // Final stand - no peek, text shakes, transition to CAPTCHA
+        peekContainer.style.display = 'none';
+
+        questionText.classList.add('wobbling');
+        subtitle.style.opacity = '0';
+        setTimeout(() => {
+          subtitle.textContent = "(okay fine, prove it then)";
+          subtitle.style.opacity = '1';
+        }, 300);
+
+        setTimeout(() => {
+          questionText.classList.remove('wobbling');
+          questionText.style.transition = 'opacity 0.4s';
+          questionText.style.opacity = '0';
+          subtitle.style.opacity = '0';
+          buttons.style.opacity = '0';
+
+          setTimeout(() => {
+            transitionText.classList.add('visible');
+          }, 400);
+
+          setTimeout(() => {
+            transitionTo('captcha');
+          }, 2000);
+        }, 1000);
+      }
+    }
+
+    // ========================================
+    // CAPTCHA PAGE
+    // ========================================
+    const LACHIE_PHOTOS = [
+      'assets/captcha/lachie-1.jpg',
+      'assets/captcha/lachie-2.jpg',
+      'assets/captcha/lachie-3.jpg',
+      'assets/captcha/lachie-4.jpg',
+      'assets/captcha/lachie-5.jpg',
+      'assets/captcha/lachie-6.jpg'
+    ];
+
+    const STOCK_PHOTOS = [
+      'assets/captcha/stock-1.jpg',
+      'assets/captcha/stock-2.jpg',
+      'assets/captcha/stock-3.jpg'
+    ];
+
+    const REJECTION_MESSAGES = [
+      "Not even close",
+      "Yeah... no",
+      "Who is this guy?",
+      "Absolutely not",
+      "Try again bestie",
+      "Be serious",
+      "That's not even close"
+    ];
+
+    function initCaptcha() {
+      const grid = document.getElementById('photo-grid');
+      const verifyBtn = document.getElementById('verify-btn');
+      const captchaBody = document.getElementById('captcha-body');
+      const captchaContainer = document.getElementById('captcha-container');
+      const subheader = document.getElementById('captcha-subheader');
+
+      // Fade in subheader
+      setTimeout(() => subheader.classList.add('visible'), 200);
+
+      state.captchaSelections = [];
+      grid.innerHTML = '';
+
+      // Shuffle and create grid
+      const allPhotos = [
+        ...LACHIE_PHOTOS.map(p => ({ src: p, isLachie: true })),
+        ...STOCK_PHOTOS.map(p => ({ src: p, isLachie: false }))
+      ];
+
+      // Shuffle
+      for (let i = allPhotos.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allPhotos[i], allPhotos[j]] = [allPhotos[j], allPhotos[i]];
+      }
+
+      allPhotos.forEach((photo, index) => {
+        const polaroid = document.createElement('div');
+        polaroid.className = `polaroid ${photo.isLachie ? '' : 'stock'}`;
+        polaroid.style.transform = `rotate(${-3 + Math.random() * 6}deg)`;
+        polaroid.dataset.index = index;
+        polaroid.dataset.isLachie = photo.isLachie;
+
+        const photoInner = document.createElement('div');
+        photoInner.className = 'photo-inner';
+
+        const img = document.createElement('img');
+        img.src = photo.src;
+        img.alt = 'CAPTCHA image';
+        img.onerror = () => {
+          img.style.display = 'none';
+          photoInner.innerHTML = `<span style="font-size:10px;color:#999;">${photo.isLachie ? 'Lachie' : 'Stock'}</span>`;
+        };
+
+        const checkmark = document.createElement('div');
+        checkmark.className = 'checkmark';
+        checkmark.textContent = '✓';
+
+        photoInner.appendChild(img);
+        polaroid.appendChild(photoInner);
+        polaroid.appendChild(checkmark);
+
+        polaroid.addEventListener('click', () => handlePhotoClick(polaroid, photo.isLachie, index, verifyBtn));
+
+        grid.appendChild(polaroid);
+      });
+
+      verifyBtn.disabled = true;
+      verifyBtn.onclick = () => handleVerify(captchaBody, captchaContainer);
+    }
+
+    function handlePhotoClick(polaroid, isLachie, index, verifyBtn) {
+      if (!isLachie) {
+        // Stock photo rejection
+        polaroid.classList.add('rejected');
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = REJECTION_MESSAGES[Math.floor(Math.random() * REJECTION_MESSAGES.length)];
+        toast.style.animation = 'toastUp 1s ease-out forwards';
+        polaroid.appendChild(toast);
+
+        setTimeout(() => {
+          polaroid.classList.remove('rejected');
+          toast.remove();
+        }, 800);
+
+        return;
+      }
+
+      // Toggle selection
+      const selIndex = state.captchaSelections.indexOf(index);
+      if (selIndex > -1) {
+        state.captchaSelections.splice(selIndex, 1);
+        polaroid.classList.remove('selected');
+      } else {
+        state.captchaSelections.push(index);
+        polaroid.classList.add('selected', 'popping');
+        setTimeout(() => polaroid.classList.remove('popping'), 150);
+      }
+
+      verifyBtn.disabled = state.captchaSelections.length === 0;
+    }
+
+    function handleVerify(captchaBody, captchaContainer) {
+      if (!debounce()) return;
+
+      const hasLachie = state.captchaSelections.length > 0;
+
+      if (!hasLachie) {
+        captchaBody.innerHTML = `
+          <div class="error-message">
+            Critical error: no husband material detected. Please try again.
+          </div>
+        `;
+        setTimeout(() => initCaptcha(), 2000);
+        return;
+      }
+
+      // Loading
+      captchaBody.innerHTML = `
+        <div class="loading-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      `;
+
+      // Success
+      setTimeout(() => {
+        captchaBody.innerHTML = `
+          <div class="success-message">
+            <div class="checkmark-circle">
+              <svg class="check-icon" viewBox="0 0 24 24">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span>Verification complete!</span>
+          </div>
+        `;
+      }, 1500);
+
+      // Transition text
+      setTimeout(() => {
+        captchaBody.innerHTML = `
+          <div class="success-message">
+            <span style="color: var(--text-primary)">Hmm... looks like the No button is broken.</span>
+          </div>
+        `;
+      }, 2500);
+
+      // Collapse container and show post-captcha
+      setTimeout(() => {
+        captchaContainer.style.transition = 'all 0.4s ease';
+        captchaContainer.style.maxHeight = captchaContainer.offsetHeight + 'px';
+        captchaContainer.offsetHeight; // Force reflow
+        captchaContainer.style.maxHeight = '0';
+        captchaContainer.style.padding = '0';
+        captchaContainer.style.opacity = '0';
+        captchaContainer.style.overflow = 'hidden';
+
+        setTimeout(() => {
+          showPostCaptcha();
+        }, 400);
+      }, 3500);
+    }
+
+    function showPostCaptcha() {
+      const captchaPage = document.getElementById('captcha');
+      const container = document.getElementById('captcha-container');
+
+      container.style.display = 'none';
+
+      const postCaptcha = document.createElement('div');
+      postCaptcha.className = 'post-captcha';
+      postCaptcha.innerHTML = `
+        <p class="broken-text">Hmm... looks like the No button is broken.</p>
+        <div class="button-row">
+          <button class="btn btn-primary btn-pulse" id="yes-btn-captcha">Yes</button>
+          <button class="btn btn-secondary broken-no">No</button>
+        </div>
+        <p class="nudge" id="captcha-nudge">Looks like there's only one option...</p>
+      `;
+
+      captchaPage.querySelector('.page-content').appendChild(postCaptcha);
+
+      // Show nudge after delay
+      setTimeout(() => {
+        document.getElementById('captcha-nudge').classList.add('visible');
+      }, 1500);
+
+      // Yes button handler
+      document.getElementById('yes-btn-captcha').addEventListener('click', () => {
+        if (!debounce()) return;
+        transitionTo('cannon-page');
+        setTimeout(() => initCannonSequence(), 400);
+      });
+    }
+
+    // ========================================
+    // CANNON SEQUENCE
+    // ========================================
+    function initCannonSequence() {
+      const cannon = document.getElementById('cannon');
+      renderCannon(cannon);
+
+      // Position cannon off-screen left
+      cannon.style.left = '-200px';
+      cannon.style.bottom = '20%';
+      cannon.style.transition = 'none';
+      cannon.style.opacity = '1';
+
+      // Roll in with bounce
+      setTimeout(() => {
+        cannon.style.transition = 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        cannon.style.left = '10%';
+      }, 100);
+
+      // Wait for cannon to settle, then fire
+      setTimeout(() => {
+        // Small recoil wind-up
+        cannon.style.transition = 'transform 0.2s';
+        cannon.style.transform = 'translateX(-3px)';
+
+        setTimeout(() => {
+          cannon.style.transform = 'translateX(0)';
+          fireCannon();
+        }, 200);
+      }, 1200);
+    }
+
+    function fireCannon() {
+      const cannon = document.getElementById('cannon');
+
+      // Screen shake
+      document.body.classList.add('shaking');
+      setTimeout(() => document.body.classList.remove('shaking'), 250);
+
+      // Calculate barrel mouth position
+      const rect = cannon.getBoundingClientRect();
+      const mouthX = (rect.left + rect.width * 0.88) / window.innerWidth;
+      const mouthY = (rect.top + rect.height * 0.12) / window.innerHeight;
+
+      // Main burst FROM the barrel mouth
+      confetti({
+        particleCount: 200,
+        angle: 60,
+        spread: 70,
+        origin: { x: mouthX, y: mouthY },
+        colors: ['#E8657A', '#D4506A', '#FADADD', '#E8B86D', '#FFFFFF'],
+        gravity: 0.8,
+        ticks: 250,
+        shapes: ['square', 'circle'],
+        scalar: 1.1
+      });
+
+      // Second burst
+      setTimeout(() => {
+        confetti({
+          particleCount: 120,
+          angle: 55,
+          spread: 80,
+          origin: { x: mouthX, y: mouthY },
+          colors: ['#E8657A', '#E8B86D', '#FFFFFF', '#FADADD'],
+          gravity: 0.9,
+          ticks: 200
+        });
+      }, 150);
+
+      // Third burst
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          angle: 70,
+          spread: 100,
+          origin: { x: mouthX, y: mouthY },
+          colors: ['#E8657A', '#FFFFFF', '#E8B86D'],
+          gravity: 1.0,
+          ticks: 180
+        });
+      }, 300);
+
+      // Fade cannon and transition
+      setTimeout(() => {
+        cannon.style.transition = 'opacity 0.3s';
+        cannon.style.opacity = '0';
+
+        setTimeout(() => {
+          transitionTo('iloveyou');
+        }, 300);
+      }, 500);
+    }
+
+    // ========================================
+    // I LOVE YOU SEQUENCE
+    // ========================================
+    function initILoveYou() {
+      const loveText = document.getElementById('love-text');
+      const loveBtn = document.getElementById('love-btn');
+      const ellipsis = document.getElementById('ellipsis');
+      const dots = ellipsis.querySelectorAll('.dot');
+
+      // Reset
+      loveText.textContent = 'I love you';
+      loveText.style.display = 'block';
+      loveBtn.style.display = 'inline-flex';
+      ellipsis.style.display = 'none';
+      loveText.classList.remove('visible');
+      loveBtn.classList.remove('visible');
+      dots.forEach(d => d.classList.remove('visible'));
+
+      // Beat 1: Show "I love you"
+      setTimeout(() => {
+        loveText.classList.add('visible');
+      }, 100);
+
+      // Beat 3: Show button
+      setTimeout(() => {
+        loveBtn.classList.add('visible');
+      }, 2500);
+
+      // Button click handler
+      loveBtn.onclick = handleLoveClick;
+    }
+
+    function handleLoveClick() {
+      if (!debounce()) return;
+
+      const loveText = document.getElementById('love-text');
+      const loveBtn = document.getElementById('love-btn');
+      const ellipsis = document.getElementById('ellipsis');
+      const dots = ellipsis.querySelectorAll('.dot');
+
+      // Hide button
+      loveBtn.style.transition = 'opacity 0.2s';
+      loveBtn.style.opacity = '0';
+
+      // Beat 4: Change to "I love you three!"
+      setTimeout(() => {
+        loveBtn.style.display = 'none';
+        loveText.style.transition = 'opacity 0.4s';
+        loveText.style.opacity = '0';
+
+        setTimeout(() => {
+          loveText.textContent = 'I love you three!';
+          loveText.style.opacity = '1';
+        }, 400);
+      }, 200);
+
+      // Beat 6: Ellipsis
+      setTimeout(() => {
+        loveText.style.opacity = '0';
+
+        setTimeout(() => {
+          loveText.style.display = 'none';
+          ellipsis.style.display = 'block';
+
+          // Show dots one at a time
+          dots.forEach((dot, i) => {
+            setTimeout(() => dot.classList.add('visible'), i * 300);
+          });
+        }, 400);
+      }, 2000);
+
+      // Beat 8: BLACKOUT
+      setTimeout(() => {
+        triggerBlackout();
+      }, 3800);
+    }
+
+    function triggerBlackout() {
+      const overlay = document.getElementById('blackout-overlay');
+      const sixtySeven = overlay.querySelector('.sixty-seven');
+      const particleLayer = document.getElementById('particle-layer');
+
+      // HARD CUT - instant blackout
+      document.body.classList.add('blackout');
+      particleLayer.style.opacity = '0';
+      overlay.classList.add('active');
+
+      // Hide I Love You page
+      document.getElementById('iloveyou').classList.remove('active');
+
+      // Beat 9: Hold black
+      setTimeout(() => {
+        // Beat 10: Flicker
+        overlay.classList.add('flickering');
+
+        setTimeout(() => {
+          overlay.classList.remove('flickering');
+
+          // Beat 11: Slide text
+          sixtySeven.classList.add('sliding');
+          document.body.classList.add('rumbling');
+
+          // Beat 12: Audio
+          if (state.soundEnabled) {
+            try {
+              const audio = document.getElementById('audio-67');
+              audio.currentTime = 0;
+              audio.play().catch(() => {});
+            } catch (e) {}
+          }
+        }, 200);
+      }, 500);
+
+      // After text exits
+      setTimeout(() => {
+        document.body.classList.remove('rumbling');
+        sixtySeven.classList.remove('sliding');
+
+        // Beat 13: Fade to victory
+        setTimeout(() => {
+          overlay.style.transition = 'opacity 1s';
+          overlay.style.opacity = '0';
+
+          document.body.classList.remove('blackout');
+          particleLayer.style.opacity = '1';
+
+          transitionTo('victory');
+
+          setTimeout(() => {
+            overlay.classList.remove('active');
+            overlay.style.transition = '';
+            overlay.style.opacity = '1';
+            sixtySeven.style.transform = '';
+          }, 1000);
+        }, 500);
+      }, 3200);
+    }
+
+    // ========================================
+    // VICTORY PAGE
+    // ========================================
+    function initVictory() {
+      const content = document.querySelector('#victory .victory-content');
+      const elements = content.querySelectorAll(':scope > *');
+
+      // Render tamagotchi
+      renderTamagotchi(document.getElementById('victory-tama'), TAMA_EXCITED);
+
+      // Animate elements in
+      elements.forEach((el, i) => {
+        setTimeout(() => {
+          el.style.animation = 'victoryReveal 0.4s ease-out forwards';
+        }, i * 250);
+      });
+
+      // Floating hearts above tamagotchi
+      const tamaSection = document.querySelector('#victory .tamagotchi-section');
+      const heartInterval = setInterval(() => {
+        if (state.currentPage !== 'victory') {
+          clearInterval(heartInterval);
+          return;
         }
 
-        // ============================================
-        // PAGE TRANSITIONS
-        // ============================================
-        function showPage(pageId) {
-            if (state.isTransitioning) return;
-            state.isTransitioning = true;
+        const heart = document.createElement('div');
+        heart.className = 'floating-pixel-heart animate';
+        heart.style.left = (30 + Math.random() * 60) + '%';
+        heart.style.top = '0';
+        tamaSection.appendChild(heart);
 
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
+        setTimeout(() => heart.remove(), 1500);
+      }, 400);
 
-            setTimeout(() => {
-                document.getElementById(pageId).classList.add('active');
-                state.currentPage = pageId;
-                state.isTransitioning = false;
-            }, 400);
+      // Mini confetti bursts
+      const confettiInterval = setInterval(() => {
+        if (state.currentPage !== 'victory') {
+          clearInterval(confettiInterval);
+          return;
         }
 
-        // ============================================
-        // TYPEWRITER EFFECT
-        // ============================================
-        function typeWriter(text, elementId, callback) {
-            const element = document.getElementById(elementId);
-            let i = 0;
-            element.textContent = '';
-
-            function type() {
-                if (i < text.length) {
-                    element.textContent += text.charAt(i);
-                    i++;
-                    const delay = 50 + (Math.random() - 0.5) * 40;
-                    setTimeout(type, delay);
-                } else if (callback) {
-                    setTimeout(callback, 400);
-                }
-            }
-            type();
-        }
-
-        // ============================================
-        // LANDING PAGE
-        // ============================================
-        if (isDesktop) {
-            document.addEventListener('mousemove', (e) => {
-                if (state.currentPage !== 'landing') return;
-
-                const tama = landingTamagotchi;
-                const rect = tama.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const deltaX = e.clientX - centerX;
-                const tilt = Math.min(5, Math.max(-5, deltaX / 80));
-                tama.style.transform = `rotate(${tilt}deg)`;
-
-                const btnRect = continueBtn.getBoundingClientRect();
-                const btnCenterX = btnRect.left + btnRect.width / 2;
-                const btnCenterY = btnRect.top + btnRect.height / 2;
-                const distance = Math.sqrt(
-                    Math.pow(e.clientX - btnCenterX, 2) +
-                    Math.pow(e.clientY - btnCenterY, 2)
-                );
-
-                if (distance < 150) {
-                    tama.classList.remove('idle');
-                    tama.classList.add('excited');
-                    setTamagotchiState('landingTamaGrid', 'excited');
-                } else {
-                    tama.classList.remove('excited');
-                    tama.classList.add('idle');
-                    setTamagotchiState('landingTamaGrid', 'idle');
-                }
-            });
-        }
-
-        continueBtn.addEventListener('click', debounce(() => {
-            landingTamagotchi.classList.remove('idle', 'excited');
-            landingTamagotchi.classList.add('wave');
-
-            setTimeout(() => {
-                showPage('question');
-                setTimeout(animateQuestionPage, 400);
-                resetNoButton();
-            }, 500);
-        }));
-
-        // ============================================
-        // QUESTION PAGE
-        // ============================================
-        function animateQuestionPage() {
-            const words = document.querySelectorAll('#questionText .word');
-            words.forEach((word, i) => {
-                setTimeout(() => word.classList.add('show'), i * 120);
-            });
-
-            setTimeout(() => {
-                document.getElementById('buttonsContainer').classList.add('show');
-            }, words.length * 120 + 300);
-        }
-
-        function handleYes() {
-            showPage('cannon-transition');
-            setTimeout(startCannonSequence, 400);
-        }
-
-        yesBtn.addEventListener('click', debounce(handleYes));
-
-        function resetNoButton() {
-            noBtn.style.position = 'relative';
-            noBtn.style.left = 'auto';
-            noBtn.style.top = 'auto';
-        }
-
-        function getRandomPosition() {
-            const padding = 20;
-            const btnWidth = noBtn.offsetWidth;
-            const btnHeight = noBtn.offsetHeight;
-            const yesRect = yesBtn.getBoundingClientRect();
-
-            let x, y, attempts = 0;
-            do {
-                x = padding + Math.random() * (window.innerWidth - btnWidth - padding * 2);
-                y = padding + Math.random() * (window.innerHeight - btnHeight - padding * 2);
-                attempts++;
-            } while (
-                attempts < 50 &&
-                Math.abs(x - yesRect.left) < 130 &&
-                Math.abs(y - yesRect.top) < 80
-            );
-
-            return { x, y };
-        }
-
-        function showPopupTamagotchi(reaction) {
-            const popup = popupTamagotchi;
-            popup.className = 'popup-tamagotchi';
-            setTamagotchiState('popupTamaGrid', 'sad');
-
-            if (reaction === 'peek') popup.classList.add('peek');
-            if (reaction === 'exclaim') popup.classList.add('show-exclaim');
-            if (reaction === 'tear') popup.classList.add('show-tear');
-
-            setTimeout(() => {
-                popup.classList.add('show');
-                if (reaction === 'wiggle') popup.classList.add('wiggle');
-                if (reaction === 'droopy') popup.classList.add('droopy');
-
-                const holdTime = reaction === 'droopy' ? 800 : reaction === 'peek' ? 300 : 600;
-                setTimeout(() => {
-                    popup.classList.remove('show', 'show-exclaim', 'show-tear');
-                }, holdTime);
-            }, 50);
-        }
-
-        noBtn.addEventListener('click', debounce(() => {
-            if (state.noClickCount >= 4) return;
-
-            state.noClickCount++;
-
-            const currentRect = noBtn.getBoundingClientRect();
-            if (noBtn.style.position !== 'fixed') {
-                noBtn.style.position = 'fixed';
-            }
-
-            const newPos = getRandomPosition();
-            let currentX = parseFloat(noBtn.style.left) || currentRect.left;
-            let distance = Math.sqrt(Math.pow(newPos.x - currentX, 2));
-
-            if (distance < 100) {
-                newPos.x = (newPos.x + 120) % (window.innerWidth - noBtn.offsetWidth - 20);
-            }
-
-            noBtn.style.left = newPos.x + 'px';
-            noBtn.style.top = newPos.y + 'px';
-
-            const reactions = ['exclaim', 'wiggle', 'droopy', 'peek'];
-            showPopupTamagotchi(reactions[state.noClickCount - 1]);
-
-            if (state.noClickCount >= 4) {
-                setTimeout(() => {
-                    const questionContainer = document.getElementById('questionText');
-                    questionContainer.style.transition = 'opacity 0.3s ease-out';
-                    questionContainer.style.opacity = '0';
-
-                    setTimeout(() => {
-                        questionContainer.className = 'question-change-text';
-                        questionContainer.innerHTML = 'Okay, you seem serious. Prove it.';
-                        questionContainer.style.opacity = '1';
-
-                        document.getElementById('buttonsContainer').style.opacity = '0';
-                        noBtn.style.opacity = '0';
-
-                        setTimeout(() => {
-                            showPage('captcha');
-                            setTimeout(initCaptcha, 400);
-                        }, 800);
-                    }, 300);
-                }, 800);
-            }
-        }));
-
-        // ============================================
-        // CAPTCHA
-        // ============================================
-        const lachieImages = Array.from({length: 6}, (_, i) => ({
-            id: `lachie-${i + 1}`,
-            src: `assets/captcha/lachie-${i + 1}.jpg`,
-            isLachie: true
-        }));
-
-        const stockImages = Array.from({length: 3}, (_, i) => ({
-            id: `stock-${i + 1}`,
-            src: `assets/captcha/stock-${i + 1}.jpg`,
-            isLachie: false
-        }));
-
-        const rejectMessages = ['Not even close', 'Yeah... no', 'Who is this guy?', 'Absolutely not', 'Try again bestie'];
-
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        }
-
-        function initCaptcha() {
-            state.captchaSelections = [];
-            const allImages = shuffleArray([...lachieImages, ...stockImages]);
-            captchaGrid.innerHTML = '';
-
-            allImages.forEach(img => {
-                const polaroid = document.createElement('div');
-                polaroid.className = 'polaroid';
-                polaroid.style.transform = `rotate(${(Math.random() - 0.5) * 8}deg)`;
-                polaroid.dataset.id = img.id;
-                polaroid.dataset.isLachie = img.isLachie;
-
-                const inner = document.createElement('div');
-                inner.className = `polaroid-inner ${img.isLachie ? '' : 'stock'}`;
-
-                const imgEl = document.createElement('img');
-                imgEl.src = img.src;
-                imgEl.alt = img.isLachie ? 'Photo' : 'Stock photo';
-                imgEl.onerror = () => {
-                    inner.style.background = img.isLachie ? 'linear-gradient(135deg, #E8657A, #D4506A)' : '#aaa';
-                    inner.innerHTML = `<span style="color:white;font-size:11px;display:flex;align-items:center;justify-content:center;height:100%;">${img.isLachie ? 'Lachie' : 'Stock'}</span>`;
-                };
-
-                const checkmark = document.createElement('div');
-                checkmark.className = 'checkmark';
-                checkmark.textContent = '\u2713';
-
-                inner.appendChild(imgEl);
-                polaroid.appendChild(inner);
-                polaroid.appendChild(checkmark);
-                polaroid.addEventListener('click', () => handleCaptchaClick(polaroid, img));
-                captchaGrid.appendChild(polaroid);
-            });
-
-            updateVerifyButton();
-        }
-
-        function handleCaptchaClick(polaroid, img) {
-            if (!img.isLachie) {
-                polaroid.classList.add('error');
-
-                // Show rejection toast
-                const toast = document.createElement('div');
-                toast.className = 'rejection-toast';
-                toast.textContent = rejectMessages[Math.floor(Math.random() * rejectMessages.length)];
-                polaroid.appendChild(toast);
-
-                setTimeout(() => {
-                    polaroid.classList.remove('error', 'selected');
-                    toast.remove();
-                    state.captchaSelections = state.captchaSelections.filter(id => id !== img.id);
-                    updateVerifyButton();
-                }, 800);
-                return;
-            }
-
-            if (polaroid.classList.contains('selected')) {
-                polaroid.classList.remove('selected');
-                state.captchaSelections = state.captchaSelections.filter(id => id !== img.id);
-            } else {
-                polaroid.classList.add('selected');
-                polaroid.style.animation = 'none';
-                polaroid.offsetHeight;
-                polaroid.style.animation = 'selectPop 0.15s ease-out';
-                state.captchaSelections.push(img.id);
-            }
-
-            updateVerifyButton();
-        }
-
-        function updateVerifyButton() {
-            verifyBtn.disabled = state.captchaSelections.length === 0;
-        }
-
-        verifyBtn.addEventListener('click', debounce(() => {
-            const hasLachie = state.captchaSelections.some(id => id.startsWith('lachie'));
-
-            if (!hasLachie) {
-                const message = document.getElementById('captchaMessage');
-                message.textContent = 'Critical error: no husband material detected. Please try again.';
-                message.classList.add('error');
-                captchaGrid.style.display = 'none';
-                verifyBtn.style.display = 'none';
-                document.getElementById('captchaStatus').style.display = 'block';
-                document.getElementById('captchaSpinner').style.display = 'none';
-
-                setTimeout(() => {
-                    state.captchaSelections = [];
-                    document.querySelectorAll('.polaroid.selected').forEach(el => el.classList.remove('selected'));
-                    captchaGrid.style.display = 'grid';
-                    verifyBtn.style.display = 'block';
-                    document.getElementById('captchaStatus').style.display = 'none';
-                    message.classList.remove('error');
-                    updateVerifyButton();
-                }, 2000);
-                return;
-            }
-
-            captchaGrid.style.display = 'none';
-            verifyBtn.style.display = 'none';
-            const status = document.getElementById('captchaStatus');
-            const spinner = document.getElementById('captchaSpinner');
-            const checkmark = document.getElementById('captchaCheckmark');
-            const message = document.getElementById('captchaMessage');
-
-            status.style.display = 'block';
-            spinner.style.display = 'flex';
-            message.textContent = 'Verifying...';
-
-            setTimeout(() => {
-                spinner.style.display = 'none';
-                checkmark.style.display = 'block';
-                message.textContent = 'Verification complete!';
-                message.style.color = '#6DBF7B';
-
-                setTimeout(() => {
-                    checkmark.style.display = 'none';
-                    message.textContent = "Hmm... looks like the No button is broken.";
-                    message.style.color = '#3D2C2C';
-
-                    const resultArea = document.getElementById('captchaResultArea');
-                    const captchaYesBtn = document.getElementById('captchaYesBtn');
-                    const captchaNoBroken = document.getElementById('captchaNoBroken');
-                    const hint = document.getElementById('captchaHint');
-
-                    resultArea.classList.add('show');
-                    captchaYesBtn.style.display = 'inline-block';
-                    captchaNoBroken.style.display = 'inline-block';
-
-                    setTimeout(() => hint.classList.add('show'), 1500);
-
-                    captchaYesBtn.addEventListener('click', debounce(handleYes));
-                    captchaNoBroken.addEventListener('click', (e) => e.preventDefault());
-                }, 1000);
-            }, 1500);
-        }));
-
-        // ============================================
-        // CANNON SEQUENCE
-        // ============================================
-        function startCannonSequence() {
-            const cannon = document.getElementById('cannon');
-
-            setTimeout(() => {
-                cannon.classList.add('roll-in');
-
-                setTimeout(() => {
-                    document.body.classList.add('screen-shake');
-
-                    setTimeout(() => {
-                        document.body.classList.remove('screen-shake');
-
-                        if (typeof confetti !== 'undefined') {
-                            confetti({
-                                particleCount: 250,
-                                spread: 160,
-                                origin: { x: 0.2, y: 0.85 },
-                                colors: ['#E8657A', '#D4506A', '#FADADD', '#E8B86D', '#FFFFFF'],
-                                gravity: 0.7,
-                                ticks: 250,
-                                shapes: ['square', 'circle'],
-                                scalar: 1.2
-                            });
-
-                            setTimeout(() => {
-                                confetti({
-                                    particleCount: 150,
-                                    spread: 120,
-                                    origin: { x: 0.25, y: 0.8 },
-                                    colors: ['#E8657A', '#E8B86D', '#FFFFFF'],
-                                    gravity: 0.8,
-                                    ticks: 200
-                                });
-                            }, 150);
-                        }
-
-                        setTimeout(() => {
-                            showPage('iloveyou');
-                            setTimeout(startLoveSequence, 400);
-                        }, 500);
-                    }, 200);
-                }, 1300);
-            }, 200);
-        }
-
-        // ============================================
-        // I LOVE YOU SEQUENCE
-        // ============================================
-        function startLoveSequence() {
-            const loveText = document.getElementById('loveText');
-            const loveTooBtn = document.getElementById('loveTooBtn');
-
-            loveText.classList.add('show');
-
-            setTimeout(() => {
-                loveTooBtn.classList.add('show');
-            }, 1500);
-        }
-
-        document.getElementById('loveTooBtn').addEventListener('click', debounce(() => {
-            const loveText = document.getElementById('loveText');
-            const loveTooBtn = document.getElementById('loveTooBtn');
-
-            loveTooBtn.classList.remove('show');
-            loveTooBtn.style.display = 'none';
-
-            setTimeout(() => {
-                loveText.textContent = 'I love you three!';
-
-                setTimeout(() => {
-                    loveText.innerHTML = '<span class="ellipsis-dot">.</span><span class="ellipsis-dot">.</span><span class="ellipsis-dot">.</span>';
-                    const dots = loveText.querySelectorAll('.ellipsis-dot');
-                    dots.forEach((dot, i) => {
-                        setTimeout(() => dot.classList.add('show'), i * 300);
-                    });
-
-                    setTimeout(() => {
-                        document.getElementById('iloveyou').classList.remove('active');
-                        document.getElementById('blackout').classList.add('active');
-                        state.currentPage = 'blackout';
-
-                        setTimeout(() => {
-                            document.getElementById('blackout').classList.add('flicker');
-                            setTimeout(() => {
-                                document.getElementById('blackout').classList.remove('flicker');
-                                startSixtySevenSequence();
-                            }, 150);
-                        }, 500);
-                    }, 1100);
-                }, 1000);
-            }, 400);
-        }));
-
-        // ============================================
-        // 67 SEQUENCE
-        // ============================================
-        function startSixtySevenSequence() {
-            const text = document.getElementById('sixtysevenText');
-
-            if (state.soundEnabled && audio67) {
-                try {
-                    audio67.currentTime = 0;
-                    audio67.play().catch(() => {});
-                } catch (e) {}
-            }
-
-            // Add rumble during animation
-            document.body.classList.add('screen-rumble');
-            text.classList.add('slide');
-
-            setTimeout(() => {
-                document.body.classList.remove('screen-rumble');
-
-                setTimeout(() => {
-                    const blackout = document.getElementById('blackout');
-                    blackout.style.transition = 'opacity 1s ease-out';
-                    blackout.style.opacity = '0';
-
-                    setTimeout(() => {
-                        blackout.classList.remove('active');
-                        blackout.style.opacity = '';
-                        blackout.style.transition = '';
-                        showPage('victory');
-                        setTimeout(startVictorySequence, 400);
-                    }, 1000);
-                }, 500);
-            }, 2000);
-        }
-
-        // ============================================
-        // VICTORY SEQUENCE
-        // ============================================
-        function startVictorySequence() {
-            setTamagotchiState('victoryTamaGrid', 'excited');
-
-            const heartsDiv = document.getElementById('victoryHearts');
-            for (let i = 0; i < 4; i++) {
-                const heart = document.createElement('span');
-                heart.className = 'victory-heart';
-                heart.textContent = '\u2764';
-                heart.style.left = `${15 + i * 25}%`;
-                heart.style.animationDelay = `${i * 0.4}s`;
-                heartsDiv.appendChild(heart);
-            }
-
-            function miniBurst() {
-                if (state.currentPage !== 'victory') return;
-                if (typeof confetti !== 'undefined') {
-                    confetti({
-                        particleCount: 18,
-                        spread: 50,
-                        origin: { x: 0.2 + Math.random() * 0.6, y: 0.3 },
-                        colors: ['#E8657A', '#E8B86D', '#FFFFFF'],
-                        gravity: 0.5,
-                        ticks: 120
-                    });
-                }
-                setTimeout(miniBurst, 4000);
-            }
-            setTimeout(miniBurst, 2000);
-
-            const lines = document.querySelectorAll('.victory-line');
-            lines.forEach((line, i) => {
-                setTimeout(() => line.classList.add('show'), i * 250);
-            });
-        }
-
-        // ============================================
-        // CALENDAR DOWNLOAD
-        // ============================================
-        document.getElementById('calendarLink').addEventListener('click', (e) => {
-            e.preventDefault();
-
-            const icsContent = `BEGIN:VCALENDAR
+        confetti({
+          particleCount: 15,
+          origin: { x: 0.15 + Math.random() * 0.7, y: 0 },
+          colors: ['#E8657A', '#FADADD', '#E8B86D'],
+          gravity: 1.2,
+          ticks: 150
+        });
+      }, 4000);
+
+      // Calendar button
+      document.getElementById('calendar-btn').onclick = () => {
+        const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Valentine//EN
 BEGIN:VEVENT
@@ -1897,62 +2475,79 @@ DESCRIPTION:Recreating our first date + surprises
 END:VEVENT
 END:VCALENDAR`;
 
-            const blob = new Blob([icsContent], { type: 'text/calendar' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'valentines-date.ics';
-            a.click();
-            URL.revokeObjectURL(url);
-        });
+        const blob = new Blob([icsContent], { type: 'text/calendar' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'valentines-date.ics';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+    }
 
-        // ============================================
-        // RESIZE HANDLER
-        // ============================================
-        window.addEventListener('resize', () => {
-            createParticles();
+    // ========================================
+    // PAGE INIT ROUTER
+    // ========================================
+    function initPage(pageId) {
+      switch (pageId) {
+        case 'landing':
+          // Already initialized on load
+          break;
+        case 'question':
+          initQuestion();
+          break;
+        case 'captcha':
+          initCaptcha();
+          break;
+        case 'cannon-page':
+          // Cannon sequence handled separately
+          break;
+        case 'iloveyou':
+          initILoveYou();
+          break;
+        case 'victory':
+          initVictory();
+          break;
+      }
+    }
 
-            if (state.currentPage === 'question' && noBtn.style.position === 'fixed') {
-                const rect = noBtn.getBoundingClientRect();
-                if (rect.right > window.innerWidth || rect.bottom > window.innerHeight) {
-                    const newPos = getRandomPosition();
-                    noBtn.style.left = newPos.x + 'px';
-                    noBtn.style.top = newPos.y + 'px';
-                }
-            }
-        });
+    // ========================================
+    // PRELOADING
+    // ========================================
+    function preloadAssets() {
+      // Preload CAPTCHA images
+      [...LACHIE_PHOTOS, ...STOCK_PHOTOS].forEach(src => {
+        new Image().src = src;
+      });
 
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            updateSoundIcon();
-            createParticles();
-            preloadAssets();
+      // Preload audio
+      const audio = document.getElementById('audio-67');
+      audio.load();
+    }
 
-            setTamagotchiState('landingTamaGrid', 'idle');
-            setTamagotchiState('popupTamaGrid', 'sad');
-            setTamagotchiState('victoryTamaGrid', 'excited');
-            renderPixelGrid(document.getElementById('cannonGrid'), cannonData, cannonColorMap);
+    // ========================================
+    // INIT
+    // ========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+      initSparkleTrail();
+      initSoundToggle();
+      initLanding();
+      preloadAssets();
+    });
 
-            setTimeout(() => {
-                typeWriter("hey beautiful, i made something for you...", "typewriterText", () => {
-                    continueBtn.style.opacity = '1';
-                    continueBtn.style.transition = 'opacity 0.5s ease-out';
-                });
-            }, 500);
-        });
-
-        // Select pop animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes selectPop {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    // Handle resize
+    window.addEventListener('resize', () => {
+      // Recalculate No button bounds if visible
+      const noBtn = document.getElementById('no-btn');
+      if (state.currentPage === 'question' && noBtn.style.position === 'fixed') {
+        const rect = noBtn.getBoundingClientRect();
+        if (rect.right > window.innerWidth - 20 || rect.bottom > window.innerHeight - 20) {
+          noBtn.style.left = Math.min(parseFloat(noBtn.style.left), window.innerWidth - 150) + 'px';
+          noBtn.style.top = Math.min(parseFloat(noBtn.style.top), window.innerHeight - 100) + 'px';
+        }
+      }
+    });
+  </script>
 </body>
 </html>
