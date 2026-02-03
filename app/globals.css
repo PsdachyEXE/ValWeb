@@ -233,6 +233,18 @@ body {
   animation: spritePop 0.2s ease-out forwards;
 }
 
+/* Slideshow: slide in from right */
+@keyframes slideInRight {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0%); }
+}
+
+/* Slideshow: slide out to left */
+@keyframes slideOutLeft {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
 /* Confetti piece: falls from top, drifts sideways, fades at bottom */
 @keyframes confettiFall {
   0% {

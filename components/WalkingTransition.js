@@ -75,7 +75,7 @@ export default function WalkingTransition({ onComplete, showConfetti }) {
   }, [onComplete])
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center">
+    <div className="relative w-full h-screen flex items-center justify-center" style={{ background: '#FFF8E7' }}>
       {showConfetti && <Confetti />}
       <TamagotchiCharacter frame="idle" size={88} />
     </div>

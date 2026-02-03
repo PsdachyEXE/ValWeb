@@ -20,19 +20,25 @@ const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 export default function FinalFrame() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [slideFading, setSlideFading] = useState(false)
+  const [prevSlide, setPrevSlide] = useState(null)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSlideFading(true)
-      setTimeout(() => {
-        setCurrentSlide(prev => (prev + 1) % SLIDESHOW_PHOTOS.length)
-        setSlideFading(false)
-      }, 300)
+      setCurrentSlide(prev => {
+        setPrevSlide(prev)
+        return (prev + 1) % SLIDESHOW_PHOTOS.length
+      })
     }, SLIDE_DURATION)
 
     return () => clearInterval(interval)
   }, [])
+
+  // Remove prev slide after animation finishes
+  useEffect(() => {
+    if (prevSlide === null) return
+    const t = setTimeout(() => setPrevSlide(null), 450)
+    return () => clearTimeout(t)
+  }, [prevSlide])
 
   // Feb 1, 2026 is Sunday = index 0 (0=Sunday)
   const startDayIndex = 0
@@ -46,22 +52,35 @@ export default function FinalFrame() {
           className="relative mx-auto rounded-2xl overflow-hidden shadow-lg"
           style={{ maxWidth: 800, aspectRatio: '16/9', background: '#222' }}
         >
-          {SLIDESHOW_PHOTOS.map((src, i) => (
+          {/* Outgoing slide: animates out to the left */}
+          {prevSlide !== null && (
             <img
-              key={i}
-              src={src}
-              alt={`Memory ${i + 1}`}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-              style={{ opacity: i === currentSlide ? 1 : 0 }}
-              loading={i <= 1 ? 'eager' : 'lazy'}
+              key={'prev-' + prevSlide}
+              src={SLIDESHOW_PHOTOS[prevSlide]}
+              alt={`Memory ${prevSlide + 1}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ animation: 'slideOutLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}
               onError={(e) => {
-                // Fall back to .svg placeholder if .jpg not found
                 if (e.target.src.endsWith('.jpg')) {
                   e.target.src = e.target.src.replace('.jpg', '.svg')
                 }
               }}
             />
-          ))}
+          )}
+
+          {/* Current (incoming) slide: animates in from the right */}
+          <img
+            key={'cur-' + currentSlide}
+            src={SLIDESHOW_PHOTOS[currentSlide]}
+            alt={`Memory ${currentSlide + 1}`}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ animation: prevSlide !== null ? 'slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'none' }}
+            onError={(e) => {
+              if (e.target.src.endsWith('.jpg')) {
+                e.target.src = e.target.src.replace('.jpg', '.svg')
+              }
+            }}
+          />
 
           {/* Slide indicators */}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
