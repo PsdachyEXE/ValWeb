@@ -8,21 +8,11 @@ const MESSAGES = [
   { text: 'Hello traveller... its nice to see a.. familiar face..', wait: 1000 },
   { text: 'I have an important message for you!', wait: 1000 },
   { text: 'The lord of the kingdom has announced a request be sent out...', wait: 1000 },
-  { text: 'He asks... Will you be my valentine?', wait: null },
+  { text: 'He asks... will you be his valentine?', wait: null },
 ]
 
-// Possible teleport positions for the No button (as % offsets within the button row)
-// Each is [left%, top-offset-px] relative to the button container
-const TELEPORT_POSITIONS = [
-  { left: '75%', top: '-30px' },
-  { left: '10%', top: '20px' },
-  { left: '60%', top: '-50px' },
-  { left: '5%', top: '-20px' },
-  { left: '80%', top: '30px' },
-  { left: '25%', top: '-40px' },
-  { left: '70%', top: '10px' },
-  { left: '15%', top: '-10px' },
-]
+// Teleport radius in px — distance the No button can jump from centre
+const TELEPORT_RADIUS = 140
 
 export default function IntroFrame({ onComplete }) {
   const [messageIndex, setMessageIndex] = useState(0)
@@ -42,7 +32,9 @@ export default function IntroFrame({ onComplete }) {
   const wrapperRef = useRef(null)
   const charRef = useRef(null)
   const noRef = useRef(null)
+  const yesRef = useRef(null)
   const explosionPosRef = useRef(null) // store explosion position for after No disappears
+  const lastTeleportRef = useRef(null) // avoid repeating the same spot
 
   const changeSpriteFrame = setSpriteFrame
 
@@ -72,12 +64,52 @@ export default function IntroFrame({ onComplete }) {
     setNoClickCount(newCount)
 
     if (newCount < 4) {
-      // Teleport the No button to a random position
-      const available = TELEPORT_POSITIONS.filter(
-        (p, i) => i !== (noClickCount - 1) // avoid repeating the last position
-      )
-      const pick = available[Math.floor(Math.random() * available.length)]
-      setNoTeleportStyle({ left: pick.left, top: pick.top })
+      // Pick a random position within TELEPORT_RADIUS that doesn't overlap the Yes button
+      const container = wrapperRef.current?.querySelector('[data-btn-row]')
+      const yes = yesRef.current
+      const containerRect = container?.getBoundingClientRect()
+      const yesRect = yes?.getBoundingClientRect()
+
+      let left, top
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const angle = Math.random() * Math.PI * 2
+        const dist = TELEPORT_RADIUS * 0.5 + Math.random() * TELEPORT_RADIUS * 0.5
+        left = Math.round(Math.cos(angle) * dist)
+        top = Math.round(Math.sin(angle) * dist)
+
+        // Clamp: keep within container bounds (with padding for the button size ~80×44)
+        if (containerRect) {
+          const w = containerRect.width
+          left = Math.max(-w * 0.3, Math.min(w * 0.3, left))
+          top = Math.max(-80, Math.min(80, top))
+        }
+
+        // Reject if too close to previous spot
+        if (lastTeleportRef.current) {
+          const dx = left - lastTeleportRef.current.left
+          const dy = top - lastTeleportRef.current.top
+          if (Math.sqrt(dx * dx + dy * dy) < 60) continue
+        }
+
+        // Reject if it would land on top of the Yes button
+        if (containerRect && yesRect) {
+          // No button will be placed relative to container centre; Yes is also in that row.
+          // Approximate: Yes button centre relative to container
+          const yesCx = yesRect.left + yesRect.width / 2 - containerRect.left
+          const yesCy = yesRect.top + yesRect.height / 2 - containerRect.top
+          // No button centre if placed at (containerW/2 + left, containerH/2 + top)
+          const noCx = containerRect.width / 2 + left
+          const noCy = containerRect.height / 2 + top
+          const dx = noCx - yesCx
+          const dy = noCy - yesCy
+          if (Math.sqrt(dx * dx + dy * dy) < 100) continue
+        }
+
+        break // valid spot found
+      }
+
+      lastTeleportRef.current = { left, top }
+      setNoTeleportStyle({ left: `calc(50% + ${left}px)`, top: `calc(50% + ${top}px)` })
     } else {
       // 4th click: show GRRR!!! then bomb throw
       setShowGrrr(true)
@@ -243,8 +275,9 @@ export default function IntroFrame({ onComplete }) {
 
       {/* Buttons */}
       {showButtons && !showHeh && (
-        <div className="flex gap-6 items-center justify-center mt-2 relative" style={{ minHeight: 80 }}>
+        <div className="flex gap-6 items-center justify-center mt-2 relative" style={{ minHeight: 80 }} data-btn-row>
           <button
+            ref={yesRef}
             className="fallout-btn fallout-btn-yes px-6 py-3 cursor-pointer hover:brightness-110 active:brightness-90"
             onClick={handleYesClick}
             disabled={showGrrr}
@@ -262,6 +295,7 @@ export default function IntroFrame({ onComplete }) {
               style={{
                 fontSize: '11px',
                 position: noClickCount > 0 ? 'absolute' : 'relative',
+                ...(noClickCount > 0 ? { transform: 'translate(-50%, -50%)' } : {}),
                 ...noTeleportStyle,
               }}
             >

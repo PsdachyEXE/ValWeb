@@ -7,12 +7,11 @@ import { useState, useEffect } from 'react'
 const SLIDESHOW_PHOTOS = Array.from({ length: 10 }, (_, i) => `/slideshow/photo-${i + 1}.jpg`)
 const SLIDE_DURATION = 2000 // 2 seconds per photo
 
-// February 2025 calendar data
-const FEB_2025 = {
-  year: 2025,
+// February 2026 calendar data
+const FEB_2026 = {
+  year: 2026,
   month: 'February',
-  startDay: 5, // Feb 1, 2025 is a Saturday (0=Sun, 6=Sat) -> index 5 if week starts Mon... actually let's use 0=Sun
-  // Feb 1 2025 = Saturday = 6
+  // Feb 1 2026 = Sunday = 0
   daysInMonth: 28,
   highlightDay: 14,
 }
@@ -35,9 +34,8 @@ export default function FinalFrame() {
     return () => clearInterval(interval)
   }, [])
 
-  // Feb 1, 2025 is Saturday = index 6 (0=Sunday)
-  const startDayIndex = 6
-  const totalCells = startDayIndex + FEB_2025.daysInMonth
+  // Feb 1, 2026 is Sunday = index 0 (0=Sunday)
+  const startDayIndex = 0
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-8 flex flex-col items-center gap-10 animate-fade-in">
@@ -91,7 +89,7 @@ export default function FinalFrame() {
           {/* Calendar header */}
           <div className="text-center mb-4">
             <h3 className="elegant-text text-xl font-semibold text-gray-800">
-              {FEB_2025.month} {FEB_2025.year}
+              {FEB_2026.month} {FEB_2026.year}
             </h3>
           </div>
 
@@ -112,9 +110,9 @@ export default function FinalFrame() {
             ))}
 
             {/* Days */}
-            {Array.from({ length: FEB_2025.daysInMonth }, (_, i) => {
+            {Array.from({ length: FEB_2026.daysInMonth }, (_, i) => {
               const day = i + 1
-              const isHighlight = day === FEB_2025.highlightDay
+              const isHighlight = day === FEB_2026.highlightDay
               return (
                 <div
                   key={day}
@@ -141,10 +139,10 @@ export default function FinalFrame() {
           </div>
           <div className="flex flex-col items-center gap-1">
             <p className="elegant-text text-lg text-gray-600">
-              February 14th, 2025
+              February 14th, 2026
             </p>
             <p className="elegant-text text-lg text-gray-600">
-              6:00 PM
+              10:00 AM
             </p>
             <p className="elegant-text text-lg font-semibold" style={{ color: '#e8818f' }}>
               Parap Markets, Darwin
