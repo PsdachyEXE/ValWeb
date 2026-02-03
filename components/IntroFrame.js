@@ -239,46 +239,69 @@ export default function IntroFrame({ onComplete }) {
   )
 }
 
-/* Explosion particle burst */
+/* Pixel-art explosion burst — hard-edged square blocks, no glow */
 function ExplosionParticles() {
-  const particles = Array.from({ length: 14 }, (_, i) => {
-    const angle = (i / 14) * 360
-    const dist = 25 + (i * 3)
+  // 24 pixel blocks in a radial pattern. Each is a square with no border-radius.
+  // Colors: layered hot palette (white core → yellow → orange → red)
+  const COLORS = ['#ffffff', '#ffffff', '#ffee44', '#ffcc00', '#ff8800', '#ff4400', '#ff2200', '#cc1100']
+  const particles = Array.from({ length: 24 }, (_, i) => {
+    const angle = (i / 24) * 360
+    // Alternate distances for a jagged pixel-burst silhouette
+    const dist = i % 2 === 0 ? 28 + (i % 6) * 4 : 18 + (i % 5) * 3
     const x = Math.cos((angle * Math.PI) / 180) * dist
     const y = Math.sin((angle * Math.PI) / 180) * dist
-    const colors = ['#FF4444', '#FF8800', '#FFCC00', '#FF6600', '#FFF', '#FF2200']
-    const color = colors[i % colors.length]
-    const size = 4 + (i % 4) * 3
+    const color = COLORS[i % COLORS.length]
+    // Pixel sizes: 4, 6, or 8 px squares
+    const size = [6, 8, 4, 6, 8, 4][i % 6]
     return { x, y, color, size }
   })
 
+  // Inner flash: a 5×5 pixel-grid cross shape (white/yellow center)
+  const flashPixels = [
+    // row, col offsets from center, color
+    [0, 0, '#ffffff'], [0, -1, '#ffffff'], [0, 1, '#ffffff'],
+    [-1, 0, '#ffffff'], [1, 0, '#ffffff'],
+    [0, -2, '#ffee44'], [0, 2, '#ffee44'],
+    [-2, 0, '#ffee44'], [2, 0, '#ffee44'],
+    [-1, -1, '#ffcc00'], [-1, 1, '#ffcc00'],
+    [1, -1, '#ffcc00'], [1, 1, '#ffcc00'],
+  ]
+  const px = 8 // pixel size for flash grid
+
   return (
     <div className="relative" style={{ width: 80, height: 80 }}>
-      {/* Flash */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, #fff 0%, #ffcc00 40%, #ff6600 70%, transparent 100%)',
-          animation: 'explosion 0.4s ease-out forwards',
-          boxShadow: '0 0 40px 15px rgba(255,200,0,0.7)',
-        }}
-      />
-      {/* Particles */}
+      {/* Pixel flash cross — hard squares, scales up then fades */}
+      {flashPixels.map((fp, i) => (
+        <div
+          key={'flash-' + i}
+          className="absolute"
+          style={{
+            left: 40 + fp[1] * px - px / 2,
+            top: 40 + fp[0] * px - px / 2,
+            width: px,
+            height: px,
+            backgroundColor: fp[2],
+            animation: 'explosion 0.4s ease-out forwards',
+            imageRendering: 'pixelated',
+          }}
+        />
+      ))}
+      {/* Pixel particles — square blocks flying outward */}
       {particles.map((p, i) => (
         <div
           key={i}
-          className="absolute rounded-full"
+          className="absolute"
           style={{
             left: '50%',
             top: '50%',
             width: p.size,
             height: p.size,
             backgroundColor: p.color,
-            boxShadow: `0 0 ${p.size + 2}px ${p.color}`,
             animation: `explosionParticle 0.5s ease-out forwards`,
             '--tx': `${p.x}px`,
             '--ty': `${p.y}px`,
             transform: 'translate(-50%, -50%)',
+            imageRendering: 'pixelated',
           }}
         />
       ))}

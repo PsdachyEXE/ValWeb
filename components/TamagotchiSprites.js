@@ -80,7 +80,7 @@ const S = {
     '..........####....####..........',  // 31
   ],
 
-  // ─── ARM BEHIND: left arm-stub tucked into body silhouette ─────────────────
+  // ─── ARM BEHIND: left arm pulled back behind body silhouette ──────────────
   armBehind: [
     '......######........######......',  //  0
     '......######........######......',  //  1
@@ -104,9 +104,9 @@ const S = {
     '....##oooooooo####oooooooo##....',  // 19
     '......####################......',  // 20
     '......####################......',  // 21
-    '........##oooooooooooo##........',  // 22
-    '........##oooooooooooo##........',  // 23
-    '......####oooooooo##oo##........',  // 24  ← left arm merged into body
+    '......##oooooooooooo##..........',  // 22  ← body shifts left (arm behind)
+    '......##oooooooooooo##..........',  // 23
+    '......####oooooooo##oo##........',  // 24  ← left arm merged into body mass
     '......####oooooooo##oo##........',  // 25
     '......######oooooooo######......',  // 26
     '......######oooooooo######......',  // 27
@@ -116,7 +116,7 @@ const S = {
     '..........####....####..........',  // 31
   ],
 
-  // ─── ARM EXTENDED: left arm reaches up-left (throwing pose) ───────────────
+  // ─── ARM EXTENDED: left arm reaches up-left, fully black-outlined ──────────
   armExtended: [
     '......######........######......',  //  0
     '......######........######......',  //  1
@@ -138,12 +138,12 @@ const S = {
     '..##oo######oooooooo######oo##..',  // 17
     '....##oooooooo####oooooooo##....',  // 18
     '....##oooooooo####oooooooo##....',  // 19
-    '......####################......',  // 20
-    '......####################......',  // 21
-    '....##oo##oooooooooooo##........',  // 22  ← arm extends up-left
+    '..##oo######################....',  // 20  ← arm base merges into chin left
+    '..##oo######################....',  // 21
+    '....##oo##oooooooooooo##........',  // 22  ← arm segment (outlined ##oo##)
     '....##oo##oooooooooooo##........',  // 23
-    '..##oo##oo##oooooooo##oo##......',  // 24  ← arm tip reaches further
-    '..##oo##oo##oooooooo##oo##......',  // 25
+    '..##oo##oooooooo##oo##..........',  // 24  ← arm tip reaches further left
+    '..##oo##oooooooo##oo##..........',  // 25
     '......######oooooooo######......',  // 26
     '......######oooooooo######......',  // 27
     '..........##oo####oo##..........',  // 28
@@ -262,30 +262,32 @@ const S = {
 }
 
 // ---------------------------------------------------------------------------
-// Bomb: 19×20 with a lit fuse
-// '#' = dark body   'o' = lit fuse spark (rendered orange)   '.' = transparent
+// Bomb: 20×21 pixelated round bomb with fuse + spark + shine highlight
+// '#' = dark body   'o' = shine (white)   '!' = fuse (brown)   '*' = spark (orange glow)
+// '.' = transparent
 // ---------------------------------------------------------------------------
 const BOMB_SPRITE = [
-  '...................',  //  0
-  '...................',  //  1
-  '.........o.........',  //  2  fuse spark
-  '........###........',  //  3  fuse
-  '........###........',  //  4  fuse
-  '.......#####.......',  //  5  bomb top
-  '......#######......',  //  6
-  '.....#########.....',  //  7
-  '....###########....',  //  8
-  '...#############...',  //  9
-  '...#############...',  // 10
-  '..###############..',  // 11
-  '..###############..',  // 12
-  '...#############...',  // 13
-  '...#############...',  // 14
-  '....###########....',  // 15
-  '.....#########.....',  // 16
-  '......#######......',  // 17
-  '.......#####.......',  // 18
-  '...................',  // 19
+  '.........*...........',  //  0  spark at fuse tip
+  '........!!...........',  //  1  fuse
+  '........!!...........',  //  2  fuse
+  '........!!...........',  //  3  fuse
+  '........!!...........',  //  4  fuse base
+  '......########.......',  //  5  bomb top (8 wide)
+  '.....##########......',  //  6  (10)
+  '....############.....',  //  7  (12)
+  '...######oo######....',  //  8  ← shine upper-right (2x2)
+  '..########oo######...',  //  9  ← shine
+  '..################...',  // 10  widest
+  '..################...',  // 11
+  '..################...',  // 12
+  '..################...',  // 13
+  '..################...',  // 14
+  '...##############....',  // 15
+  '....############.....',  // 16
+  '.....##########......',  // 17
+  '......########.......',  // 18  bomb bottom
+  '.....................',  // 19  empty
+  '.....................',  // 20  empty
 ]
 
 // ---------------------------------------------------------------------------
@@ -323,7 +325,7 @@ export function TamagotchiCharacter({ frame = 'idle', size = 96, className = '' 
 }
 
 export function BombSprite({ size = 60, className = '' }) {
-  const cols = BOMB_SPRITE[0] ? BOMB_SPRITE[0].length : 19
+  const cols = BOMB_SPRITE[0] ? BOMB_SPRITE[0].length : 21
   const rows = BOMB_SPRITE.length
   const pixelW = size / cols
   const pixelH = size / rows
@@ -341,8 +343,16 @@ export function BombSprite({ size = 60, className = '' }) {
               return <div key={x} style={{ width: pixelW, height: pixelH, backgroundColor: '#1a1a1a' }} />
             }
             if (px === 'o') {
-              // Lit fuse spark — orange / yellow glow
-              return <div key={x} style={{ width: pixelW, height: pixelH, backgroundColor: '#ff8c00', boxShadow: '0 0 3px 1px #ffcc00' }} />
+              // Shine highlight — white
+              return <div key={x} style={{ width: pixelW, height: pixelH, backgroundColor: '#ffffff' }} />
+            }
+            if (px === '!') {
+              // Fuse — dark brown
+              return <div key={x} style={{ width: pixelW, height: pixelH, backgroundColor: '#5d3a1a' }} />
+            }
+            if (px === '*') {
+              // Spark — orange with glow
+              return <div key={x} style={{ width: pixelW, height: pixelH, backgroundColor: '#ff8c00', boxShadow: '0 0 4px 2px #ffcc00' }} />
             }
             return <div key={x} style={{ width: pixelW, height: pixelH }} />
           })}
