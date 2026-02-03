@@ -81,7 +81,7 @@ export default function CaptchaChallenge({ onComplete }) {
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto px-4 flex flex-col items-center gap-5">
+    <div className="w-full max-w-xl mx-auto px-4 flex flex-col items-center gap-5">
       {/* Tamagotchi */}
       <TamagotchiCharacter frame={spriteFrame} size={80} />
 
@@ -130,7 +130,8 @@ export default function CaptchaChallenge({ onComplete }) {
                 return (
                   <div
                     key={idx}
-                    className={`captcha-cell rounded aspect-square relative overflow-hidden ${isSelected ? 'selected' : ''}`}
+                    className={`captcha-cell rounded relative overflow-hidden ${isSelected ? 'selected' : ''}`}
+                    style={{ height: 180 }}
                     onClick={() => toggleSelect(img)}
                     role="checkbox"
                     aria-checked={isSelected}
