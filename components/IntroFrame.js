@@ -482,7 +482,7 @@ function ExplosionParticles() {
 
 /* Full-viewport confetti overlay — pink & white squares falling from top corners */
 function ConfettiOverlay() {
-  const CONFETTI_COUNT = 40
+  const CONFETTI_COUNT = 120
   const pinks = ['#ff69b4', '#FFB6C1', '#ff85c2']
   const whites = ['#ffffff', '#fff0f3']
 
@@ -495,16 +495,15 @@ function ConfettiOverlay() {
 
   const pieces = []
   for (let i = 0; i < CONFETTI_COUNT; i++) {
-    const isLeft = i < CONFETTI_COUNT / 2
-    const x = isLeft ? rand() * 35 : 65 + rand() * 35
+    const x = rand() * 100                          // full width spread
     const color = rand() < 0.5
       ? pinks[Math.floor(rand() * pinks.length)]
       : whites[Math.floor(rand() * whites.length)]
-    const delay = rand() * 1.2
-    const duration = 1.8 + rand() * 1.2
+    const delay = rand() * 0.6                      // tighter stagger: 0–0.6s
+    const duration = 1.6 + rand() * 1.0             // 1.6–2.6s fall
     const size = 4 + Math.floor(rand() * 5)
     const rotEnd = (rand() - 0.5) * 720
-    const driftX = (rand() - 0.5) * 60
+    const driftX = (rand() - 0.5) * 40
     pieces.push({ x, color, delay, duration, size, rotEnd, driftX })
   }
 
