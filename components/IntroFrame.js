@@ -28,6 +28,7 @@ export default function IntroFrame({ onComplete }) {
   const [showGrrr, setShowGrrr] = useState(false)
   const [noTeleportStyle, setNoTeleportStyle] = useState({})
   const [showHearts, setShowHearts] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const wrapperRef = useRef(null)
   const charRef = useRef(null)
@@ -201,6 +202,7 @@ export default function IntroFrame({ onComplete }) {
 
   const handleYesClick = () => {
     setShowHearts(true)
+    setShowConfetti(true)
     changeSpriteFrame('happy')
 
     // After happy + hearts, start dance loop
@@ -349,6 +351,9 @@ export default function IntroFrame({ onComplete }) {
           <ExplosionParticles />
         </div>
       )}
+
+      {/* Full-screen confetti on Yes click */}
+      {showConfetti && <ConfettiOverlay />}
     </div>
   )
 }
@@ -468,6 +473,55 @@ function ExplosionParticles() {
             '--ty': `${p.y}px`,
             transform: 'translate(-50%, -50%)',
             imageRendering: 'pixelated',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* Full-viewport confetti overlay — pink & white squares falling from top corners */
+function ConfettiOverlay() {
+  const CONFETTI_COUNT = 40
+  const pinks = ['#ff69b4', '#FFB6C1', '#ff85c2']
+  const whites = ['#ffffff', '#fff0f3']
+
+  // Seeded PRNG so SSR === client (no hydration mismatch)
+  let seed = 42
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) & 0x7fffffff
+    return seed / 0x7fffffff
+  }
+
+  const pieces = []
+  for (let i = 0; i < CONFETTI_COUNT; i++) {
+    const isLeft = i < CONFETTI_COUNT / 2
+    const x = isLeft ? rand() * 35 : 65 + rand() * 35
+    const color = rand() < 0.5
+      ? pinks[Math.floor(rand() * pinks.length)]
+      : whites[Math.floor(rand() * whites.length)]
+    const delay = rand() * 1.2
+    const duration = 1.8 + rand() * 1.2
+    const size = 4 + Math.floor(rand() * 5)
+    const rotEnd = (rand() - 0.5) * 720
+    const driftX = (rand() - 0.5) * 60
+    pieces.push({ x, color, delay, duration, size, rotEnd, driftX })
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 50, overflow: 'hidden' }}>
+      {pieces.map((p, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: '-10px',
+            left: `calc(${p.x}% + ${p.driftX}px)`,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            '--rot': `${p.rotEnd}deg`,
+            animation: `confettiFall ${p.duration}s ease-in ${p.delay}s forwards`,
           }}
         />
       ))}
