@@ -11,7 +11,6 @@ const STAGES = {
   INTRO: 'intro',
   WALK_1: 'walk1',
   CAPTCHA: 'captcha',
-  WALK_2: 'walk2',
   FINAL: 'final',
 }
 
@@ -28,10 +27,6 @@ export default function Page() {
   }
 
   const handleCaptchaComplete = () => {
-    setStage(STAGES.WALK_2)
-  }
-
-  const handleWalk2Complete = () => {
     setSubtle(true)
     setStage(STAGES.FINAL)
   }
@@ -46,15 +41,11 @@ export default function Page() {
         )}
 
         {stage === STAGES.WALK_1 && (
-          <WalkingTransition onComplete={handleWalk1Complete} />
+          <WalkingTransition onComplete={handleWalk1Complete} showConfetti />
         )}
 
         {stage === STAGES.CAPTCHA && (
           <CaptchaChallenge onComplete={handleCaptchaComplete} />
-        )}
-
-        {stage === STAGES.WALK_2 && (
-          <WalkingTransition onComplete={handleWalk2Complete} />
         )}
 
         {stage === STAGES.FINAL && (

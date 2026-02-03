@@ -35,6 +35,7 @@ export default function IntroFrame({ onComplete }) {
   const yesRef = useRef(null)
   const explosionPosRef = useRef(null) // store explosion position for after No disappears
   const lastTeleportRef = useRef(null) // avoid repeating the same spot
+  const danceIntervalRef = useRef(null)
 
   const changeSpriteFrame = setSpriteFrame
 
@@ -201,10 +202,27 @@ export default function IntroFrame({ onComplete }) {
   const handleYesClick = () => {
     setShowHearts(true)
     changeSpriteFrame('happy')
-    // Brief pause to enjoy the happy moment, then proceed
+
+    // After happy + hearts, start dance loop
+    const danceStart = setTimeout(() => {
+      changeSpriteFrame('danceLeft')
+      let frame = 'danceLeft'
+      const danceInterval = setInterval(() => {
+        frame = frame === 'danceLeft' ? 'danceRight' : 'danceLeft'
+        changeSpriteFrame(frame)
+      }, 250)
+      // Store interval id so cleanup can clear it (stored on the timeout closure)
+      danceIntervalRef.current = danceInterval
+    }, 600)
+
+    // Advance to next stage after the dance
     setTimeout(() => {
+      if (danceIntervalRef.current) {
+        clearInterval(danceIntervalRef.current)
+        danceIntervalRef.current = null
+      }
       if (onComplete) onComplete()
-    }, 1200)
+    }, 2200)
   }
 
   const getExplosionStyle = () => {

@@ -154,6 +154,80 @@ const S = {
     '..........####....####..........',  // 31
   ],
 
+  // ─── DANCE LEFT: arms up, left foot lifted (jumping pose facing left) ───────
+  // Head identical to idle. Arms extend upward from shoulders (rows 20-23).
+  // Body is compact. Left leg is lifted; right leg stays planted.
+  danceLeft: [
+    '......######........######......',  //  0
+    '......######........######......',  //  1
+    '....##########....##########....',  //  2
+    '....##########....##########....',  //  3
+    '....########################....',  //  4
+    '....########################....',  //  5
+    '....########################....',  //  6
+    '....########################....',  //  7
+    '....##oooooooooooooooooooo##....',  //  8
+    '....##oooooooooooooooooooo##....',  //  9
+    '..##oo######oooooooo######oo##..',  // 10
+    '..##oo######oooooooo######oo##..',  // 11
+    '..##oo####oo##oooo##oo####oo##..',  // 12
+    '..##oo####oo##oooo##oo####oo##..',  // 13
+    '..##oo####oo##oooo##oo####oo##..',  // 14
+    '..##oo####oo##oooo##oo####oo##..',  // 15
+    '..##oo######oooooooo######oo##..',  // 16
+    '..##oo######oooooooo######oo##..',  // 17
+    '....##oooooooo####oooooooo##....',  // 18  nose
+    '....##oooooooo####oooooooo##....',  // 19
+    '....##oo##############oo##oo....',  // 20  ← arms raised: left ##oo at cols 4-7, right ##oo at cols 24-27
+    '....##oo##############oo##oo....',  // 21
+    '......##oo##oooooo##oo##........',  // 22  ← arm segments angled up
+    '......##oo##oooooo##oo##........',  // 23
+    '........##oooooooooooo##........',  // 24  body (no side stubs — arms are up)
+    '........##oooooooooooo##........',  // 25
+    '........######oooo######........',  // 26  body bottom
+    '........######oooo######........',  // 27
+    '............##oo##..............',  // 28  ← only right leg (left is lifted)
+    '............##oo##..............',  // 29
+    '............####................',  // 30  right foot only
+    '............####................',  // 31
+  ],
+
+  // ─── DANCE RIGHT: arms up, right foot lifted (mirror of danceLeft) ──────────
+  danceRight: [
+    '......######........######......',  //  0
+    '......######........######......',  //  1
+    '....##########....##########....',  //  2
+    '....##########....##########....',  //  3
+    '....########################....',  //  4
+    '....########################....',  //  5
+    '....########################....',  //  6
+    '....########################....',  //  7
+    '....##oooooooooooooooooooo##....',  //  8
+    '....##oooooooooooooooooooo##....',  //  9
+    '..##oo######oooooooo######oo##..',  // 10
+    '..##oo######oooooooo######oo##..',  // 11
+    '..##oo####oo##oooo##oo####oo##..',  // 12
+    '..##oo####oo##oooo##oo####oo##..',  // 13
+    '..##oo####oo##oooo##oo####oo##..',  // 14
+    '..##oo####oo##oooo##oo####oo##..',  // 15
+    '..##oo######oooooooo######oo##..',  // 16
+    '..##oo######oooooooo######oo##..',  // 17
+    '....##oooooooo####oooooooo##....',  // 18  nose
+    '....##oooooooo####oooooooo##....',  // 19
+    '....oo##oo##############oo##....',  // 20  ← arms raised (mirrored)
+    '....oo##oo##############oo##....',  // 21
+    '........##oo##oooooo##oo##......',  // 22  ← arm segments angled up (mirrored)
+    '........##oo##oooooo##oo##......',  // 23
+    '........##oooooooooooo##........',  // 24  body
+    '........##oooooooooooo##........',  // 25
+    '........######oooo######........',  // 26  body bottom
+    '........######oooo######........',  // 27
+    '..........##oo##................',  // 28  ← only left leg (right is lifted)
+    '..........##oo##................',  // 29
+    '..........####..................',  // 30  left foot only
+    '..........####..................',  // 31
+  ],
+
   // ─── HAPPY: closed ^-^ eyes with a cute smile ──────────────────────────────
   // Eyes are arcs: top pixel row is narrow, bottom row is wide → upward curve
   // Smile: a small curved line below the eyes
