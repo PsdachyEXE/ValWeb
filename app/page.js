@@ -37,7 +37,7 @@ export default function Page() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="min-h-screen w-full overflow-hidden">
       <WaveBackground subtle={subtle} />
 
       <div className="relative z-10 min-h-screen flex items-center justify-center">
