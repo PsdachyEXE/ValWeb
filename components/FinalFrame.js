@@ -18,14 +18,61 @@ const FEB_2026 = {
 
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
+// GMT+9:30 offset in minutes
+const TZ_OFFSET_MIN = 9 * 60 + 30
+
+// Returns { year, month (0-based), day, hours, minutes, seconds } in GMT+9:30
+function nowInTZ() {
+  const utcMs = Date.now()
+  const local = new Date(utcMs + TZ_OFFSET_MIN * 60000)
+  return {
+    year: local.getUTCFullYear(),
+    month: local.getUTCMonth(),      // 0-based
+    day: local.getUTCDate(),
+    hours: local.getUTCHours(),
+    minutes: local.getUTCMinutes(),
+    seconds: local.getUTCSeconds(),
+  }
+}
+
+// Target: Feb 14 2026 10:00:00 AM GMT+9:30 → expressed as a UTC timestamp
+// Feb 14 2026 10:00 ACST = Feb 14 2026 00:30 UTC
+const TARGET_UTC_MS = Date.UTC(2026, 1, 14, 0, 30, 0) // month is 0-based
+
+function computeCountdown() {
+  const remaining = TARGET_UTC_MS - Date.now()
+  if (remaining <= 0) return null // it's time!
+  const totalSeconds = Math.floor(remaining / 1000)
+  return {
+    days:    Math.floor(totalSeconds / 86400),
+    hours:   Math.floor((totalSeconds % 86400) / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+  }
+}
+
 export default function FinalFrame() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [countdown, setCountdown] = useState(() => computeCountdown())
+  const [todayDay, setTodayDay] = useState(() => nowInTZ().day)
 
+  // Slideshow auto-advance
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % SLIDESHOW_PHOTOS.length)
     }, SLIDE_DURATION)
+    return () => clearInterval(interval)
+  }, [])
 
+  // Countdown tick — also refreshes todayDay each second so the calendar
+  // highlights the right day even if the page stays open past midnight
+  useEffect(() => {
+    const tick = () => {
+      setCountdown(computeCountdown())
+      setTodayDay(nowInTZ().day)
+    }
+    tick() // immediate first tick
+    const interval = setInterval(tick, 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -117,20 +164,57 @@ export default function FinalFrame() {
             {Array.from({ length: FEB_2026.daysInMonth }, (_, i) => {
               const day = i + 1
               const isHighlight = day === FEB_2026.highlightDay
+              const isToday = day === todayDay
               return (
                 <div
                   key={day}
                   className={`h-8 flex items-center justify-center text-sm rounded-full transition-colors
                     ${isHighlight
                       ? 'font-bold text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : isToday
+                        ? 'font-semibold'
+                        : 'text-gray-600 hover:bg-gray-100'
                     }`}
-                  style={isHighlight ? { background: '#e8818f', color: '#fff', fontWeight: 700 } : {}}
+                  style={
+                    isHighlight
+                      ? { background: '#e8818f', color: '#fff', fontWeight: 700 }
+                      : isToday
+                        ? { background: '#FDE2E4', color: '#e8818f', fontWeight: 600 }
+                        : {}
+                  }
                 >
                   {day}
                 </div>
               )
             })}
+          </div>
+
+          {/* Countdown */}
+          <div className="mt-5 pt-4" style={{ borderTop: '1px solid #f0e0e0' }}>
+            {countdown ? (
+              <div className="flex justify-center gap-3">
+                {[
+                  { value: countdown.days,    label: 'Days' },
+                  { value: countdown.hours,   label: 'Hrs' },
+                  { value: countdown.minutes, label: 'Min' },
+                  { value: countdown.seconds, label: 'Sec' },
+                ].map(({ value, label }) => (
+                  <div key={label} className="flex flex-col items-center">
+                    <div
+                      className="elegant-text text-xl font-bold"
+                      style={{ color: '#e8818f', minWidth: 36, textAlign: 'center' }}
+                    >
+                      {String(value).padStart(2, '0')}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">{label}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="elegant-text text-center text-lg font-semibold" style={{ color: '#e8818f' }}>
+                It's today! 💕
+              </p>
+            )}
           </div>
         </div>
 
