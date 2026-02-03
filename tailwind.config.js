@@ -28,8 +28,6 @@ module.exports = {
         'bomb-arc': 'bombArc 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
         'explosion': 'explosion 0.4s ease-out forwards',
         'shake': 'shake 0.3s ease-out',
-        'walk-cycle': 'walkCycle 0.3s steps(1) infinite',
-        'slide-left': 'slideLeft 2.5s linear forwards',
         'btn-destroy': 'btnDestroy 0.5s ease-out forwards',
         'pulse-slow': 'pulseSlow 2s ease-in-out infinite',
         'fade-in': 'fadeIn 0.5s ease-out forwards',
@@ -74,14 +72,6 @@ module.exports = {
           '40%': { transform: 'translateX(10px)' },
           '60%': { transform: 'translateX(-8px)' },
           '80%': { transform: 'translateX(6px)' },
-        },
-        walkCycle: {
-          '0%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-2px)' },
-        },
-        slideLeft: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-100vw)' },
         },
         btnDestroy: {
           '0%': { transform: 'scale(1)', opacity: 1 },

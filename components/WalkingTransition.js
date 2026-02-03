@@ -4,19 +4,12 @@ import { useState, useEffect } from 'react'
 import { TamagotchiCharacter } from './TamagotchiSprites'
 
 const WALK_DURATION = 2500 // ms total
-const STEP_INTERVAL = 250 // ms per step toggle
 
 export default function WalkingTransition({ onComplete }) {
-  const [legFrame, setLegFrame] = useState('walkLeft')
   const [progress, setProgress] = useState(0) // 0 to 1
 
   useEffect(() => {
     const startTime = Date.now()
-
-    // Animate leg cycle
-    const legInterval = setInterval(() => {
-      setLegFrame(prev => (prev === 'walkLeft' ? 'walkRight' : 'walkLeft'))
-    }, STEP_INTERVAL)
 
     // Animate progress for scene movement
     const animFrame = () => {
@@ -32,12 +25,10 @@ export default function WalkingTransition({ onComplete }) {
 
     // Call onComplete when done
     const timeout = setTimeout(() => {
-      clearInterval(legInterval)
       if (onComplete) onComplete()
     }, WALK_DURATION)
 
     return () => {
-      clearInterval(legInterval)
       clearTimeout(timeout)
     }
   }, [onComplete])
@@ -80,7 +71,7 @@ export default function WalkingTransition({ onComplete }) {
           transition: 'none',
         }}
       >
-        <TamagotchiCharacter frame={legFrame} size={88} />
+        <TamagotchiCharacter frame="idle" size={88} />
       </div>
 
       {/* Ground shadow */}

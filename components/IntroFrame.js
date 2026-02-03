@@ -11,10 +11,23 @@ const MESSAGES = [
   { text: 'He asks... Will you be my valentine?', wait: null },
 ]
 
+// Possible teleport positions for the No button (as % offsets within the button row)
+// Each is [left%, top-offset-px] relative to the button container
+const TELEPORT_POSITIONS = [
+  { left: '75%', top: '-30px' },
+  { left: '10%', top: '20px' },
+  { left: '60%', top: '-50px' },
+  { left: '5%', top: '-20px' },
+  { left: '80%', top: '30px' },
+  { left: '25%', top: '-40px' },
+  { left: '70%', top: '10px' },
+  { left: '15%', top: '-10px' },
+]
+
 export default function IntroFrame({ onComplete }) {
   const [messageIndex, setMessageIndex] = useState(0)
   const [showButtons, setShowButtons] = useState(false)
-  const [noClicked, setNoClicked] = useState(false)
+  const [noClickCount, setNoClickCount] = useState(0)
   const [noVisible, setNoVisible] = useState(true)
   const [showBomb, setShowBomb] = useState(false)
   const [bombStyle, setBombStyle] = useState({})
@@ -22,10 +35,16 @@ export default function IntroFrame({ onComplete }) {
   const [shakeScreen, setShakeScreen] = useState(false)
   const [spriteFrame, setSpriteFrame] = useState('idle')
   const [showHeh, setShowHeh] = useState(false)
+  const [showGrrr, setShowGrrr] = useState(false)
+  const [noTeleportStyle, setNoTeleportStyle] = useState({})
+  const [showHearts, setShowHearts] = useState(false)
 
   const wrapperRef = useRef(null)
   const charRef = useRef(null)
   const noRef = useRef(null)
+  const explosionPosRef = useRef(null) // store explosion position for after No disappears
+
+  const changeSpriteFrame = setSpriteFrame
 
   const advanceMessage = useCallback(() => {
     setMessageIndex(prev => {
@@ -48,65 +67,78 @@ export default function IntroFrame({ onComplete }) {
     }
   }
 
-  // Compute bomb arc using positions of character and No button
   const handleNoClick = () => {
-    if (noClicked) return
-    setNoClicked(true)
-    setSpriteFrame('armBehind')
+    const newCount = noClickCount + 1
+    setNoClickCount(newCount)
 
-    setTimeout(() => {
-      setSpriteFrame('armExtended')
-    }, 300)
+    if (newCount < 4) {
+      // Teleport the No button to a random position
+      const available = TELEPORT_POSITIONS.filter(
+        (p, i) => i !== (noClickCount - 1) // avoid repeating the last position
+      )
+      const pick = available[Math.floor(Math.random() * available.length)]
+      setNoTeleportStyle({ left: pick.left, top: pick.top })
+    } else {
+      // 4th click: show GRRR!!! then bomb throw
+      setShowGrrr(true)
+      changeSpriteFrame('armBehind')
 
-    // Calculate positions for bomb arc
-    setTimeout(() => {
-      if (!charRef.current || !noRef.current || !wrapperRef.current) {
-        // Fallback if refs not available
-        setShowBomb(true)
-        setBombStyle({ top: -60, left: '60%', transition: 'all 0.8s cubic-bezier(0.25,0.46,0.45,0.94)' })
-        setTimeout(() => triggerExplosion(), 1200)
-        return
-      }
+      setTimeout(() => {
+        changeSpriteFrame('armExtended')
+      }, 400)
 
-      const wrapper = wrapperRef.current.getBoundingClientRect()
-      const charRect = charRef.current.getBoundingClientRect()
-      const noRect = noRef.current.getBoundingClientRect()
+      // Launch bomb after GRRR has shown
+      setTimeout(() => {
+        launchBomb()
+      }, 700)
+    }
+  }
 
-      // Start: right side of character, middle height
-      const startX = (charRect.right - wrapper.left) - 10
-      const startY = (charRect.top - wrapper.top) + charRect.height / 2
-
-      // End: center of No button
-      const endX = (noRect.left + noRect.width / 2) - wrapper.left
-      const endY = (noRect.top + noRect.height / 2) - wrapper.top
-
-      // Show bomb at start position
+  const launchBomb = () => {
+    if (!charRef.current || !noRef.current || !wrapperRef.current) {
+      // Fallback
       setShowBomb(true)
-      setBombStyle({
-        position: 'absolute',
-        left: startX,
-        top: startY,
-        zIndex: 50,
-        transition: 'none',
-        pointerEvents: 'none',
-      })
+      setBombStyle({ position: 'absolute', top: -60, left: '60%', transition: 'all 0.8s cubic-bezier(0.25,0.46,0.45,0.94)', pointerEvents: 'none', zIndex: 50 })
+      setTimeout(() => triggerExplosion(), 1200)
+      return
+    }
 
-      // Next frame: animate to end position via arc
+    const wrapper = wrapperRef.current.getBoundingClientRect()
+    const charRect = charRef.current.getBoundingClientRect()
+    const noRect = noRef.current.getBoundingClientRect()
+
+    const startX = (charRect.right - wrapper.left) - 10
+    const startY = (charRect.top - wrapper.top) + charRect.height / 2
+    const endX = (noRect.left + noRect.width / 2) - wrapper.left
+    const endY = (noRect.top + noRect.height / 2) - wrapper.top
+
+    // Store explosion position before No button disappears
+    explosionPosRef.current = { left: endX - 40, top: endY - 40 }
+
+    setShowBomb(true)
+    setBombStyle({
+      position: 'absolute',
+      left: startX,
+      top: startY,
+      zIndex: 50,
+      transition: 'none',
+      pointerEvents: 'none',
+    })
+
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setBombStyle({
-            position: 'absolute',
-            left: endX - 20, // center the 40px bomb
-            top: endY - 20,
-            zIndex: 50,
-            transition: 'left 0.5s cubic-bezier(0.25,0.46,0.45,0.94), top 0.5s cubic-bezier(0.4,0,0.2,1)',
-            pointerEvents: 'none',
-          })
+        setBombStyle({
+          position: 'absolute',
+          left: endX - 20,
+          top: endY - 20,
+          zIndex: 50,
+          transition: 'left 0.5s cubic-bezier(0.25,0.46,0.45,0.94), top 0.5s cubic-bezier(0.4,0,0.2,1)',
+          pointerEvents: 'none',
         })
       })
+    })
 
-      setTimeout(() => triggerExplosion(), 800)
-    }, 500)
+    setTimeout(() => triggerExplosion(), 800)
   }
 
   const triggerExplosion = () => {
@@ -114,7 +146,6 @@ export default function IntroFrame({ onComplete }) {
     setShowExplosion(true)
     setShakeScreen(true)
 
-    // Hide No button
     setTimeout(() => {
       setNoVisible(false)
       setShowExplosion(false)
@@ -124,23 +155,36 @@ export default function IntroFrame({ onComplete }) {
       setShakeScreen(false)
     }, 350)
 
-    // Show "Heh.."
     setTimeout(() => {
       setShowHeh(true)
-      setSpriteFrame('talking')
+      setShowGrrr(false)
+      changeSpriteFrame('talking')
     }, 700)
 
     setTimeout(() => {
-      setSpriteFrame('idle')
+      changeSpriteFrame('idle')
     }, 1500)
   }
 
   const handleYesClick = () => {
-    if (onComplete) onComplete()
+    setShowHearts(true)
+    changeSpriteFrame('happy')
+    // Brief pause to enjoy the happy moment, then proceed
+    setTimeout(() => {
+      if (onComplete) onComplete()
+    }, 1200)
   }
 
-  // Get explosion position (where No button was)
   const getExplosionStyle = () => {
+    if (explosionPosRef.current) {
+      return {
+        position: 'absolute',
+        left: explosionPosRef.current.left,
+        top: explosionPosRef.current.top,
+        zIndex: 50,
+        pointerEvents: 'none',
+      }
+    }
     if (noRef.current && wrapperRef.current) {
       const wrapper = wrapperRef.current.getBoundingClientRect()
       const noRect = noRef.current.getBoundingClientRect()
@@ -155,53 +199,71 @@ export default function IntroFrame({ onComplete }) {
     return { position: 'absolute', right: 0, top: '-20px', zIndex: 50, pointerEvents: 'none' }
   }
 
+  // Determine what to show in the textbox
+  const getTextboxContent = () => {
+    if (showGrrr) {
+      return <Typewriter key="grrr" text="GRRR!!!" speed={60} autoStart={true} />
+    }
+    if (showHeh) {
+      return <Typewriter key="heh" text="Heh.." speed={80} autoStart={true} />
+    }
+    return (
+      <Typewriter
+        key={messageIndex}
+        text={MESSAGES[messageIndex].text}
+        speed={50}
+        onComplete={handleTypewriterComplete}
+      />
+    )
+  }
+
   return (
     <div
       className={`w-full max-w-2xl mx-auto px-4 flex flex-col items-center gap-6 relative ${shakeScreen ? 'animate-shake' : ''}`}
       ref={wrapperRef}
     >
-      {/* Tamagotchi character */}
-      <div className="relative" ref={charRef}>
-        <TamagotchiCharacter frame={spriteFrame} size={96} />
+      {/* Tamagotchi character — key triggers scale-pop on frame change */}
+      <div className="relative" ref={charRef} style={{ width: 96, height: 96 }}>
+        <div
+          key={spriteFrame}
+          className="animate-sprite-pop"
+          style={{ width: 96, height: 96 }}
+        >
+          <TamagotchiCharacter frame={spriteFrame} size={96} />
+        </div>
+
+        {/* Floating hearts (shown on Yes click) */}
+        {showHearts && <HeartParticles />}
       </div>
 
       {/* Dialogue textbox */}
       <div className="textbox w-full rounded-lg px-5 py-4 min-h-[80px] flex items-center relative">
-        {!showHeh ? (
-          <Typewriter
-            key={messageIndex}
-            text={MESSAGES[messageIndex].text}
-            speed={50}
-            onComplete={handleTypewriterComplete}
-          />
-        ) : (
-          <Typewriter
-            key="heh"
-            text="Heh.."
-            speed={80}
-            autoStart={true}
-          />
-        )}
+        {getTextboxContent()}
       </div>
 
       {/* Buttons */}
       {showButtons && !showHeh && (
-        <div className="flex gap-6 items-center justify-center mt-2">
+        <div className="flex gap-6 items-center justify-center mt-2 relative" style={{ minHeight: 80 }}>
           <button
             className="fallout-btn fallout-btn-yes px-6 py-3 cursor-pointer hover:brightness-110 active:brightness-90"
             onClick={handleYesClick}
-            style={{ fontSize: '11px' }}
+            disabled={showGrrr}
+            style={{ fontSize: '11px', opacity: showGrrr ? 0.5 : 1 }}
           >
             Yes
           </button>
 
           {noVisible && (
             <button
+              key={noClickCount}
               ref={noRef}
-              className="fallout-btn fallout-btn-no px-6 py-3 cursor-pointer hover:brightness-110 active:brightness-90"
+              className={`fallout-btn fallout-btn-no px-6 py-3 cursor-pointer hover:brightness-110 active:brightness-90${noClickCount > 0 ? ' animate-teleport-pop' : ''}`}
               onClick={handleNoClick}
-              disabled={noClicked}
-              style={{ fontSize: '11px', opacity: noClicked ? 0.7 : 1 }}
+              style={{
+                fontSize: '11px',
+                position: noClickCount > 0 ? 'absolute' : 'relative',
+                ...noTeleportStyle,
+              }}
             >
               No
             </button>
@@ -235,6 +297,58 @@ export default function IntroFrame({ onComplete }) {
           <ExplosionParticles />
         </div>
       )}
+    </div>
+  )
+}
+
+/* Floating pink pixel hearts above the character */
+function HeartParticles() {
+  // 7 hearts at staggered positions, each floats up and fades
+  const hearts = [
+    { left: '-30px', delay: '0s', size: 14 },
+    { left: '10px',  delay: '0.2s', size: 10 },
+    { left: '-50px', delay: '0.4s', size: 18 },
+    { left: '30px',  delay: '0.1s', size: 12 },
+    { left: '-15px', delay: '0.5s', size: 16 },
+    { left: '50px',  delay: '0.3s', size: 10 },
+    { left: '-45px', delay: '0.35s', size: 14 },
+  ]
+
+  // Pixel heart shape: 5×4 grid
+  // '##..##' top row, '######' middle, '.####.' lower, '..##..' tip
+  const HEART = [
+    [0,1,0,0,1,0],
+    [1,1,1,1,1,1],
+    [1,1,1,1,1,1],
+    [0,1,1,1,1,0],
+    [0,0,1,1,0,0],
+  ]
+
+  return (
+    <div className="absolute" style={{ top: '-10px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 10 }}>
+      {hearts.map((h, i) => (
+        <div
+          key={i}
+          className="absolute"
+          style={{
+            left: h.left,
+            top: 0,
+            animation: `heartFloat 1.8s ease-out ${h.delay} forwards`,
+          }}
+        >
+          {HEART.map((row, y) => (
+            <div key={y} style={{ display: 'flex' }}>
+              {row.map((px, x) => (
+                px ? (
+                  <div key={x} style={{ width: h.size / 6, height: h.size / 5, backgroundColor: '#ff69b4' }} />
+                ) : (
+                  <div key={x} style={{ width: h.size / 6, height: h.size / 5 }} />
+                )
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   )
 }

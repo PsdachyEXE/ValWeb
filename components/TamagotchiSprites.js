@@ -80,7 +80,8 @@ const S = {
     '..........####....####..........',  // 31
   ],
 
-  // ─── ARM BEHIND: left arm pulled back behind body silhouette ──────────────
+  // ─── ARM BEHIND: left arm tucked behind body, right arm visible as stub ────
+  // Body is same width as idle. Left arm merges flush into the left body edge.
   armBehind: [
     '......######........######......',  //  0
     '......######........######......',  //  1
@@ -102,21 +103,22 @@ const S = {
     '..##oo######oooooooo######oo##..',  // 17
     '....##oooooooo####oooooooo##....',  // 18
     '....##oooooooo####oooooooo##....',  // 19
-    '......####################......',  // 20
+    '......####################......',  // 20  chin — same as idle
     '......####################......',  // 21
-    '......##oooooooooooo##..........',  // 22  ← body shifts left (arm behind)
-    '......##oooooooooooo##..........',  // 23
-    '......####oooooooo##oo##........',  // 24  ← left arm merged into body mass
-    '......####oooooooo##oo##........',  // 25
-    '......######oooooooo######......',  // 26
-    '......######oooooooo######......',  // 27
+    '........##oooooooooooo##........',  // 22  body top — same as idle
+    '........##oooooooooooo##........',  // 23
+    '........##oooooooo##oo##........',  // 24  ← left arm gone, right stub stays
+    '........##oooooooo##oo##........',  // 25
+    '........######oooo######........',  // 26  body bottom
+    '........######oooo######........',  // 27
     '..........##oo####oo##..........',  // 28
     '..........##oo####oo##..........',  // 29
     '..........####....####..........',  // 30
     '..........####....####..........',  // 31
   ],
 
-  // ─── ARM EXTENDED: left arm reaches up-left, fully black-outlined ──────────
+  // ─── ARM EXTENDED: left arm swings out to the right, reaching forward ──────
+  // Arm extends from the right side of the body outward (that's the throwing side).
   armExtended: [
     '......######........######......',  //  0
     '......######........######......',  //  1
@@ -138,13 +140,13 @@ const S = {
     '..##oo######oooooooo######oo##..',  // 17
     '....##oooooooo####oooooooo##....',  // 18
     '....##oooooooo####oooooooo##....',  // 19
-    '..##oo######################....',  // 20  ← arm base merges into chin left
-    '..##oo######################....',  // 21
-    '....##oo##oooooooooooo##........',  // 22  ← arm segment (outlined ##oo##)
-    '....##oo##oooooooooooo##........',  // 23
-    '..##oo##oooooooo##oo##..........',  // 24  ← arm tip reaches further left
-    '..##oo##oooooooo##oo##..........',  // 25
-    '......######oooooooo######......',  // 26
+    '......####################......',  // 20  chin — same as idle
+    '......####################......',  // 21
+    '........##oooooooooooo##........',  // 22  body top — same as idle
+    '........##oooooooooooo##........',  // 23
+    '......##oo##oooooooo##oo##oo##..',  // 24  ← right arm extends out further
+    '......##oo##oooooooo##oo##oo##..',  // 25
+    '......######oooooooo######......',  // 26  body bottom — same as idle
     '......######oooooooo######......',  // 27
     '..........##oo####oo##..........',  // 28
     '..........##oo####oo##..........',  // 29
@@ -152,8 +154,10 @@ const S = {
     '..........####....####..........',  // 31
   ],
 
-  // ─── WALK LEFT: feet in stride pose ───────────────────────────────────────
-  walkLeft: [
+  // ─── HAPPY: closed ^-^ eyes with a cute smile ──────────────────────────────
+  // Eyes are arcs: top pixel row is narrow, bottom row is wide → upward curve
+  // Smile: a small curved line below the eyes
+  happy: [
     '......######........######......',  //  0
     '......######........######......',  //  1
     '....##########....##########....',  //  2
@@ -164,16 +168,16 @@ const S = {
     '....########################....',  //  7
     '....##oooooooooooooooooooo##....',  //  8
     '....##oooooooooooooooooooo##....',  //  9
-    '..##oo######oooooooo######oo##..',  // 10
-    '..##oo######oooooooo######oo##..',  // 11
-    '..##oo####oo##oooo##oo####oo##..',  // 12
-    '..##oo####oo##oooo##oo####oo##..',  // 13
-    '..##oo####oo##oooo##oo####oo##..',  // 14
-    '..##oo####oo##oooo##oo####oo##..',  // 15
-    '..##oo######oooooooo######oo##..',  // 16
-    '..##oo######oooooooo######oo##..',  // 17
-    '....##oooooooo####oooooooo##....',  // 18
-    '....##oooooooo####oooooooo##....',  // 19
+    '....##oooo####oooo####oooo##....',  // 10  ← eye arc tops (narrow peaks)
+    '....##oooo####oooo####oooo##....',  // 11
+    '....##oo##oooo##oo##oooo##oo##..',  // 12  ← eye arc widens
+    '....##oo##oooo##oo##oooo##oo##..',  // 13
+    '....##oo####oo##oo##oo####oo##..',  // 14  ← eye arc bottoms (wide spread)
+    '....##oo####oo##oo##oo####oo##..',  // 15
+    '....##oooooooooooooooooooo##....',  // 16
+    '....##oooooooooooooooooooo##....',  // 17
+    '....##oooooo##oo##oo##oooo##....',  // 18  ← smile start (wide)
+    '....##oooooooo####oooooooo##....',  // 19  ← smile end (narrow center)
     '......####################......',  // 20
     '......####################......',  // 21
     '........##oooooooooooo##........',  // 22
@@ -182,46 +186,10 @@ const S = {
     '......##oo##oooooooo##oo##......',  // 25
     '......######oooooooo######......',  // 26
     '......######oooooooo######......',  // 27
-    '........##oo####..##oo##........',  // 28  ← left leg forward
-    '........##oo####..##oo##........',  // 29
-    '........####........####........',  // 30  ← feet split wide
-    '........####........####........',  // 31
-  ],
-
-  // ─── WALK RIGHT: mirrored stride (alternates with walkLeft) ────────────────
-  walkRight: [
-    '......######........######......',  //  0
-    '......######........######......',  //  1
-    '....##########....##########....',  //  2
-    '....##########....##########....',  //  3
-    '....########################....',  //  4
-    '....########################....',  //  5
-    '....########################....',  //  6
-    '....########################....',  //  7
-    '....##oooooooooooooooooooo##....',  //  8
-    '....##oooooooooooooooooooo##....',  //  9
-    '..##oo######oooooooo######oo##..',  // 10
-    '..##oo######oooooooo######oo##..',  // 11
-    '..##oo####oo##oooo##oo####oo##..',  // 12
-    '..##oo####oo##oooo##oo####oo##..',  // 13
-    '..##oo####oo##oooo##oo####oo##..',  // 14
-    '..##oo####oo##oooo##oo####oo##..',  // 15
-    '..##oo######oooooooo######oo##..',  // 16
-    '..##oo######oooooooo######oo##..',  // 17
-    '....##oooooooo####oooooooo##....',  // 18
-    '....##oooooooo####oooooooo##....',  // 19
-    '......####################......',  // 20
-    '......####################......',  // 21
-    '........##oooooooooooo##........',  // 22
-    '........##oooooooooooo##........',  // 23
-    '......##oo##oooooooo##oo##......',  // 24
-    '......##oo##oooooooo##oo##......',  // 25
-    '......######oooooooo######......',  // 26
-    '......######oooooooo######......',  // 27
-    '..........##oo##..####oo##......',  // 28  ← right leg forward
-    '..........##oo##..####oo##......',  // 29
-    '..........####........####......',  // 30  ← feet split (mirrored)
-    '..........####........####......',  // 31
+    '..........##oo####oo##..........',  // 28
+    '..........##oo####oo##..........',  // 29
+    '..........####....####..........',  // 30
+    '..........####....####..........',  // 31
   ],
 
   // ─── IDLE STANCE: same as idle (used for stationary poses) ─────────────────
